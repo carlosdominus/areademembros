@@ -1,0 +1,53 @@
+{
+  "entities": {
+    "autorizados": {
+      "title": "Autorizados",
+      "description": "Lista de e-mails autorizados com acesso ativado à mentoria",
+      "type": "object",
+      "properties": {
+        "nome": { "type": "string" },
+        "ativo": { "type": "boolean" },
+        "turma": { "type": "string" },
+        "criadoEm": { "type": "string", "format": "date-time" }
+      },
+      "required": ["nome", "ativo"]
+    },
+    "modulos": {
+      "title": "Módulos",
+      "description": "Módulos do curso",
+      "type": "object",
+      "properties": {
+        "ordem": { "type": "number" },
+        "titulo": { "type": "string" },
+        "capaUrl": { "type": "string" },
+        "publicado": { "type": "boolean" }
+      },
+      "required": ["ordem", "titulo", "publicado"]
+    },
+    "aulas": {
+      "title": "Aulas",
+      "description": "Aulas do curso",
+      "type": "object",
+      "properties": {
+        "moduloId": { "type": "string" },
+        "ordem": { "type": "number" },
+        "titulo": { "type": "string" },
+        "descricao": { "type": "string" },
+        "duracaoMin": { "type": "number" },
+        "vturbEmbedId": { "type": "string" },
+        "materialUrl": { "type": "string" },
+        "publicado": { "type": "boolean" }
+      },
+      "required": ["moduloId", "ordem", "titulo", "duracaoMin", "vturbEmbedId", "publicado"]
+    },
+    "progresso": {
+      "title": "Progresso do Aluno",
+      "description": "Registros de progresso, avaliações e sessão do aluno por UID",
+      "type": "object",
+      "properties": {
+        "ultimoLogin": { "type": "string", "format": "date-time" },
+        "sessaoId": { "type": "string" }
+      }
+    }
+  }
+}
