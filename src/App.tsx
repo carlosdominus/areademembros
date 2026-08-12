@@ -262,13 +262,16 @@ export function AppContent() {
   // Render Tela de Carregamento Inicial
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#040607] text-[#F3F4F6] flex flex-col items-center justify-center space-y-4">
-        <div className="w-12 h-12 rounded-2xl bg-[#153A2D] border border-[#22E025]/40 text-[#22E025] flex items-center justify-center animate-spin">
-          <RefreshCw className="w-6 h-6" />
+      <div className="min-h-screen w-full flex items-center justify-center p-4 relative overflow-hidden bg-[#040607]">
+        <div className="adsata-bg-fixed" />
+        <div className="relative z-10 w-full max-w-sm backdrop-blur-2xl bg-[#06120e]/65 border border-[#22E025]/35 shadow-[0_20px_60px_rgba(0,0,0,0.85),0_0_50px_rgba(34,224,37,0.18)] rounded-3xl p-8 text-center space-y-4">
+          <div className="w-13 h-13 rounded-2xl bg-[#153A2D]/80 border border-[#22E025]/50 text-[#22E025] flex items-center justify-center mx-auto animate-spin shadow-[0_0_20px_rgba(34,224,37,0.35)]">
+            <RefreshCw className="w-6 h-6" />
+          </div>
+          <p className="text-xs font-mono font-bold text-[#22E025] tracking-wider uppercase">
+            Acessando Área de Membros...
+          </p>
         </div>
-        <p className="text-xs font-mono font-bold text-[#22E025] tracking-widest uppercase">
-          Verificando Credenciais no Servidor...
-        </p>
       </div>
     );
   }

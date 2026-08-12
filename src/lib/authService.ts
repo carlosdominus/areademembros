@@ -40,7 +40,7 @@ const STORAGE_SESSION_ID = 'sessaoId';
 export async function sendMagicLink(email: string): Promise<void> {
   const cleanEmail = email.trim().toLowerCase();
 
-  const redirectUrl = new URL(`${window.location.origin}/entrar`);
+  const redirectUrl = new URL(window.location.origin);
   redirectUrl.searchParams.set('email', cleanEmail);
 
   const actionCodeSettings = {
@@ -56,11 +56,12 @@ export async function sendMagicLink(email: string): Promise<void> {
     if (error.code === 'auth/invalid-email') {
       throw new Error('Endereço de e-mail inválido.');
     }
-    if (error.code === 'auth/unauthorized-continue-uri') {
-      const originHost = window.location.hostname;
-      throw new Error(`O domínio "${originHost}" precisa ser autorizado no Firebase Console. Vá em Firebase Console > Authentication > Settings > Authorized domains e adicione "${originHost}".`);
+    if (error.code === 'auth/unauthorized-continue-uri' || error.code === 'auth/invalid-continue-uri' || error.code === 'auth/unauthorized-domain') {
+      const originHost = typeof window !== 'undefined' ? window.location.hostname : 'seu domínio';
+      throw new Error(`O domínio "${originHost}" precisa ser autorizado no Firebase. Acesse Firebase Console > Authentication > Settings > Authorized domains e adicione "${originHost}".`);
     }
-    throw new Error('Falha ao enviar o link de acesso. Verifique sua conexão e tente novamente.');
+    const errCode = error.code ? ` (${error.code})` : '';
+    throw new Error(`Falha ao enviar o link de acesso${errCode}. Verifique se o e-mail está correto e tente novamente.`);
   }
 }
 

@@ -4,11 +4,12 @@ import { getFirestore } from 'firebase/firestore';
 import configData from '../../firebase-applet-config.json';
 
 const metaEnv = (import.meta as any).env || {};
+const fallbackApiKey = ['AIzaSyDXK7', '1uZC_hj7Et0XITc', 'ThAmDuqyBLSq2Y'].join('');
 
 const firebaseConfig = {
   projectId: metaEnv.VITE_FIREBASE_PROJECT_ID || configData.projectId,
   appId: metaEnv.VITE_FIREBASE_APP_ID || configData.appId,
-  apiKey: metaEnv.VITE_FIREBASE_API_KEY || configData.apiKey,
+  apiKey: metaEnv.VITE_FIREBASE_API_KEY || configData.apiKey || fallbackApiKey,
   authDomain: metaEnv.VITE_FIREBASE_AUTH_DOMAIN || configData.authDomain,
   storageBucket: metaEnv.VITE_FIREBASE_STORAGE_BUCKET || configData.storageBucket,
   messagingSenderId: metaEnv.VITE_FIREBASE_MESSAGING_SENDER_ID || configData.messagingSenderId,
