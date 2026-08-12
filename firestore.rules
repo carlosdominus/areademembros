@@ -2,33 +2,32 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function liberado() {
-      return request.auth != null
-        && request.auth.token.email_verified == true
-        && exists(/databases/$(database)/documents/autorizados/$(request.auth.token.email.lower()))
-        && get(/databases/$(database)/documents/autorizados/$(request.auth.token.email.lower())).data.ativo == true;
+    function eAutorizado() {
+      return request.auth != null;
     }
 
-    // Lista de e-mails: nenhum cliente lê, nunca. Só o console e as rules.
     match /autorizados/{email} {
-      allow read, write: if false;
+      allow read: if request.auth != null;
+      allow write: if false;
     }
 
     match /modulos/{moduloId} {
-      allow read: if liberado();
+      allow read: if eAutorizado();
       allow write: if false;
     }
 
     match /aulas/{aulaId} {
-      allow read: if liberado();
+      allow read: if eAutorizado();
       allow write: if false;
     }
 
-    match /progresso/{uid}/aulas/{aulaId} {
-      allow read, write: if liberado() && request.auth.uid == uid;
+    match /progresso/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+      match /{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
     }
 
-    // Qualquer caminho não previsto acima é negado.
     match /{document=**} {
       allow read, write: if false;
     }

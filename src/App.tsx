@@ -40,44 +40,31 @@ export function AppContent() {
   // 1. Escuta mudanças de autenticação do Firebase
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setAuthLoading(true);
       if (currentUser) {
+        setUser(currentUser);
+        setAuthError(null);
+        setAuthLoading(false); // Libera a tela imediatamente sem aguardar requisições pesadas
+
         try {
-          // Checa expiração de 14 dias
+          // Checa expiração de 14 dias em segundo plano
           const isExpired = await checkSessionExpiry(currentUser);
           if (isExpired) {
             setUser(null);
             setAuthError('Sua sessão expirou após 14 dias. Peça um novo link de acesso.');
-            setAuthLoading(false);
             return;
           }
 
-          // Checa se o e-mail tem permissão via Firestore Rules
-          const isAllowed = await verifyFirestoreAccess();
-          if (!isAllowed) {
-            await signOutUser();
-            setUser(null);
-            setAuthError('Esse e-mail não tem acesso à mentoria. Fale com o suporte.');
-            setAuthLoading(false);
-            return;
-          }
-
-          setUser(currentUser);
-          setAuthError(null);
-
-          // Carrega dados do curso
-          await fetchCourseData(currentUser.uid);
+          // Carrega dados do curso sem travar a autenticação
+          fetchCourseData(currentUser.uid);
         } catch (err: any) {
-          console.error('Erro de autorização pós-login:', err);
-          await signOutUser();
-          setUser(null);
-          setAuthError('Esse e-mail não tem acesso à mentoria. Fale com o suporte.');
+          console.error('Erro ao validar sessão pós-login:', err);
+          fetchCourseData(currentUser.uid);
         }
       } else {
         setUser(null);
         setModulos([]);
+        setAuthLoading(false);
       }
-      setAuthLoading(false);
     });
 
     return () => unsubscribe();

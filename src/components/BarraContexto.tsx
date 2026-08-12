@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowLeft, BookOpen, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Modulo, Aula } from '../dados-mock';
+import { Modulo, Aula } from '../types';
 
 interface BarraContextoProps {
   moduloAtual: Modulo;

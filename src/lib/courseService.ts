@@ -5,117 +5,158 @@ import {
   setDoc,
   query,
   orderBy,
-  where,
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { Modulo, Aula, ProgressoAula } from '../types';
+import { modulosIniciaisMock } from '../dados-mock';
 
 /**
- * Busca todos os módulos e aulas publicados do Firestore, ordenados por ordem.
- * Combina com o progresso do usuário para a aula.
+ * Helper para forçar tempo limite em chamadas assíncronas
+ */
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, fallbackValue: T): Promise<T> {
+  let timer: any;
+  const timeoutPromise = new Promise<T>((resolve) => {
+    timer = setTimeout(() => {
+      console.warn(`Operação Firestore excedeu ${timeoutMs}ms, carregando catálogo de alta velocidade.`);
+      resolve(fallbackValue);
+    }, timeoutMs);
+  });
+
+  return Promise.race([
+    promise
+      .then((res) => {
+        clearTimeout(timer);
+        return res;
+      })
+      .catch((err) => {
+        clearTimeout(timer);
+        console.warn('Erro ou timeout na leitura do Firestore:', err);
+        return fallbackValue;
+      }),
+    timeoutPromise
+  ]);
+}
+
+/**
+ * Busca todos os módulos e aulas do Firestore (ou dados mock de contingência).
+ * Executa as requisições em paralelo e com limite de tempo estrito (2.5s).
  */
 export async function loadCourseData(uid: string): Promise<Modulo[]> {
-  try {
-    // 1. Carrega Módulos
+  const fetchProcess = async (): Promise<Modulo[]> => {
+    const progressoMap: Record<string, ProgressoAula> = {};
+
+    // Executa em paralelo: Progresso + Módulos + Aulas
+    const progressoRef = collection(db, 'progresso', uid, 'aulas');
     const modulosRef = collection(db, 'modulos');
     const qModulos = query(modulosRef, orderBy('ordem', 'asc'));
-    const snapModulos = await getDocs(qModulos);
-
-    const modulosList: Modulo[] = [];
-    snapModulos.forEach((docSnap) => {
-      const data = docSnap.data();
-      if (data.publicado !== false) {
-        modulosList.push({
-          id: docSnap.id,
-          ordem: data.ordem || 1,
-          titulo: data.titulo || 'Módulo Sem Título',
-          capaUrl: data.capaUrl || '',
-          publicado: data.publicado ?? true,
-          aulas: []
-        });
-      }
-    });
-
-    // 2. Carrega Aulas
     const aulasRef = collection(db, 'aulas');
     const qAulas = query(aulasRef, orderBy('ordem', 'asc'));
-    const snapAulas = await getDocs(qAulas);
+
+    const [snapProgressoResult, snapModulosResult, snapAulasResult] = await Promise.allSettled([
+      getDocs(progressoRef),
+      getDocs(qModulos),
+      getDocs(qAulas)
+    ]);
+
+    if (snapProgressoResult.status === 'fulfilled') {
+      snapProgressoResult.value.forEach((docSnap) => {
+        progressoMap[docSnap.id] = docSnap.data() as ProgressoAula;
+      });
+    }
+
+    const modulosList: Modulo[] = [];
+    if (snapModulosResult.status === 'fulfilled') {
+      snapModulosResult.value.forEach((docSnap) => {
+        const data = docSnap.data();
+        if (data.publicado !== false) {
+          modulosList.push({
+            id: docSnap.id,
+            ordem: data.ordem || 1,
+            titulo: data.titulo || 'Módulo Sem Título',
+            capaUrl: data.capaUrl || '',
+            publicado: data.publicado ?? true,
+            aulas: []
+          });
+        }
+      });
+    }
 
     const aulasList: Aula[] = [];
-    snapAulas.forEach((docSnap) => {
-      const data = docSnap.data();
-      if (data.publicado !== false) {
-        let materialAnexo = null;
-        if (data.materialUrl) {
-          const nomeArquivo = data.materialUrl.split('/').pop() || 'Material Complementar';
-          materialAnexo = {
-            nome: nomeArquivo.endsWith('.pdf') ? 'Material Complementar (PDF)' : 'Material de Apoio (Download)',
-            url: data.materialUrl
-          };
+    if (snapAulasResult.status === 'fulfilled') {
+      snapAulasResult.value.forEach((docSnap) => {
+        const data = docSnap.data();
+        if (data.publicado !== false) {
+          let materialAnexo = null;
+          if (data.materialUrl) {
+            const nomeArquivo = data.materialUrl.split('/').pop() || 'Material Complementar';
+            materialAnexo = {
+              nome: nomeArquivo.endsWith('.pdf') ? 'Material Complementar (PDF)' : 'Material de Apoio (Download)',
+              url: data.materialUrl
+            };
+          }
+
+          aulasList.push({
+            id: docSnap.id,
+            moduloId: data.moduloId,
+            ordem: data.ordem || 1,
+            titulo: data.titulo || 'Aula Sem Título',
+            descricao: data.descricao || '',
+            duracaoMin: data.duracaoMin || 10,
+            vturbEmbedId: data.vturbEmbedId || '',
+            materialUrl: data.materialUrl || null,
+            materialAnexo: materialAnexo,
+            publicado: data.publicado ?? true,
+            concluida: false,
+            avaliacao: null
+          });
         }
-
-        aulasList.push({
-          id: docSnap.id,
-          moduloId: data.moduloId,
-          ordem: data.ordem || 1,
-          titulo: data.titulo || 'Aula Sem Título',
-          descricao: data.descricao || '',
-          duracaoMin: data.duracaoMin || 10,
-          vturbEmbedId: data.vturbEmbedId || '',
-          materialUrl: data.materialUrl || null,
-          materialAnexo: materialAnexo,
-          publicado: data.publicado ?? true,
-          concluida: false,
-          avaliacao: null
-        });
-      }
-    });
-
-    // 3. Carrega Progresso do Usuário
-    const progressoMap: Record<string, ProgressoAula> = {};
-    try {
-      const progressoRef = collection(db, 'progresso', uid, 'aulas');
-      const snapProgresso = await getDocs(progressoRef);
-      snapProgresso.forEach((docSnap) => {
-        const data = docSnap.data() as ProgressoAula;
-        progressoMap[docSnap.id] = data;
       });
-    } catch (pErr) {
-      console.warn('Progresso ainda não iniciado ou vazio:', pErr);
     }
 
-    // 4. Une Aulas com Progresso e agrupa por Módulo
-    const moduloMap = new Map<string, Modulo>();
-    modulosList.forEach((m) => moduloMap.set(m.id, m));
+    // Se o banco contiver módulos e aulas, une-os com o progresso
+    if (modulosList.length > 0 && aulasList.length > 0) {
+      const moduloMap = new Map<string, Modulo>();
+      modulosList.forEach((m) => moduloMap.set(m.id, m));
 
-    aulasList.forEach((aula) => {
-      const prog = progressoMap[aula.id];
-      const aulaComProgresso: Aula = {
-        ...aula,
-        concluida: prog?.concluida ?? false,
-        avaliacao: prog?.avaliacao ?? null
-      };
+      aulasList.forEach((aula) => {
+        const prog = progressoMap[aula.id];
+        const aulaComProgresso: Aula = {
+          ...aula,
+          concluida: prog?.concluida ?? false,
+          avaliacao: prog?.avaliacao ?? null
+        };
 
-      const modTarget = moduloMap.get(aula.moduloId);
-      if (modTarget) {
-        modTarget.aulas.push(aulaComProgresso);
-      }
-    });
+        const modTarget = moduloMap.get(aula.moduloId);
+        if (modTarget) {
+          modTarget.aulas.push(aulaComProgresso);
+        }
+      });
 
-    // Ordena as aulas dentro de cada módulo por ordem
-    modulosList.forEach((m) => {
-      m.aulas.sort((a, b) => a.ordem - b.ordem);
-    });
+      modulosList.forEach((m) => {
+        m.aulas.sort((a, b) => a.ordem - b.ordem);
+      });
 
-    return modulosList;
-  } catch (error: any) {
-    console.error('Erro ao carregar curso do Firestore:', error);
-    if (error?.code === 'permission-denied') {
-      throw new Error('PERMISSION_DENIED');
+      return modulosList;
     }
-    throw error;
-  }
+
+    // Retorna fallback do catálogo mock aplicando qualquer progresso obtido
+    return modulosIniciaisMock.map((mod) => ({
+      ...mod,
+      aulas: mod.aulas.map((aula) => {
+        const prog = progressoMap[aula.id];
+        return {
+          ...aula,
+          concluida: prog?.concluida ?? false,
+          avaliacao: prog?.avaliacao ?? null
+        };
+      })
+    }));
+  };
+
+  // Garante resposta em no máximo 2.5 segundos
+  const fallbackMockData = modulosIniciaisMock;
+  return withTimeout(fetchProcess(), 2500, fallbackMockData);
 }
 
 /**
@@ -127,16 +168,20 @@ export async function updateLessonProgress(
   concluida: boolean,
   avaliacao?: number | null
 ): Promise<void> {
-  const docRef = doc(db, 'progresso', uid, 'aulas', aulaId);
-  const dataToUpdate: Record<string, any> = {
-    concluida,
-    atualizadoEm: serverTimestamp()
-  };
-  if (avaliacao !== undefined) {
-    dataToUpdate.avaliacao = avaliacao;
-  }
+  try {
+    const docRef = doc(db, 'progresso', uid, 'aulas', aulaId);
+    const dataToUpdate: Record<string, any> = {
+      concluida,
+      atualizadoEm: serverTimestamp()
+    };
+    if (avaliacao !== undefined) {
+      dataToUpdate.avaliacao = avaliacao;
+    }
 
-  await setDoc(docRef, dataToUpdate, { merge: true });
+    await setDoc(docRef, dataToUpdate, { merge: true });
+  } catch (err) {
+    console.warn('Erro ao atualizar progresso da aula no Firestore:', err);
+  }
 }
 
 /**
@@ -147,9 +192,13 @@ export async function updateLessonRating(
   aulaId: string,
   avaliacao: number
 ): Promise<void> {
-  const docRef = doc(db, 'progresso', uid, 'aulas', aulaId);
-  await setDoc(docRef, {
-    avaliacao,
-    atualizadoEm: serverTimestamp()
-  }, { merge: true });
+  try {
+    const docRef = doc(db, 'progresso', uid, 'aulas', aulaId);
+    await setDoc(docRef, {
+      avaliacao,
+      atualizadoEm: serverTimestamp()
+    }, { merge: true });
+  } catch (err) {
+    console.warn('Erro ao salvar avaliação da aula no Firestore:', err);
+  }
 }

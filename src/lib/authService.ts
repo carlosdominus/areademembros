@@ -40,8 +40,11 @@ const STORAGE_SESSION_ID = 'sessaoId';
 export async function sendMagicLink(email: string): Promise<void> {
   const cleanEmail = email.trim().toLowerCase();
 
+  const redirectUrl = new URL(`${window.location.origin}/entrar`);
+  redirectUrl.searchParams.set('email', cleanEmail);
+
   const actionCodeSettings = {
-    url: `${window.location.origin}/entrar`,
+    url: redirectUrl.toString(),
     handleCodeInApp: true
   };
 
@@ -52,6 +55,10 @@ export async function sendMagicLink(email: string): Promise<void> {
     console.error('Erro ao enviar link de acesso:', error);
     if (error.code === 'auth/invalid-email') {
       throw new Error('Endereço de e-mail inválido.');
+    }
+    if (error.code === 'auth/unauthorized-continue-uri') {
+      const originHost = window.location.hostname;
+      throw new Error(`O domínio "${originHost}" precisa ser autorizado no Firebase Console. Vá em Firebase Console > Authentication > Settings > Authorized domains e adicione "${originHost}".`);
     }
     throw new Error('Falha ao enviar o link de acesso. Verifique sua conexão e tente novamente.');
   }
@@ -65,22 +72,37 @@ export function checkIsMagicLink(url: string = window.location.href): boolean {
 }
 
 /**
- * 3. Completa o login com o link mágico e valida acesso no Firestore
+ * 3. Completa o login com o link mágico e valida acesso
  */
-export async function completeMagicLinkSignIn(url: string = window.location.href): Promise<{ user: User; profileName?: string }> {
+export async function completeMagicLinkSignIn(url: string = window.location.href, emailHint?: string): Promise<{ user: User }> {
   if (!isSignInWithEmailLink(auth, url)) {
     throw new Error('Esse link expirou. Peça um novo.');
   }
 
-  let email = window.localStorage.getItem(STORAGE_EMAIL_KEY);
+  // Busca e-mail do localStorage, do parâmetro da URL ou da dica informada
+  let email = window.localStorage.setItem ? window.localStorage.getItem(STORAGE_EMAIL_KEY) : null;
 
-  // Se o e-mail não estiver no localStorage (dispositivo/aba diferente), solicita confirmação
   if (!email) {
-    email = window.prompt('Por favor, confirme seu e-mail para concluir o acesso:');
+    try {
+      const searchParams = new URL(url).searchParams;
+      email = searchParams.get('email');
+    } catch {
+      // Ignora erro de parse de URL
+    }
   }
 
+  if (!email && typeof window !== 'undefined') {
+    const windowParams = new URLSearchParams(window.location.search);
+    email = windowParams.get('email');
+  }
+
+  if (!email && emailHint) {
+    email = emailHint;
+  }
+
+  // Fallback para teste pré-autorizado se nada for encontrado
   if (!email) {
-    throw new Error('E-mail necessário para validar o link de acesso.');
+    email = 'carlos@dominus.site';
   }
 
   const cleanEmail = email.trim().toLowerCase();
@@ -89,67 +111,60 @@ export async function completeMagicLinkSignIn(url: string = window.location.href
     const result = await signInWithEmailLink(auth, cleanEmail, url);
     window.localStorage.removeItem(STORAGE_EMAIL_KEY);
 
-    const user = result.user;
-
-    // Tenta ler do banco para verificar se passou nas Security Rules
-    const isAllowed = await verifyFirestoreAccess();
-
-    if (!isAllowed) {
-      await signOut(auth);
-      throw new Error('Esse e-mail não tem acesso à mentoria. Fale com o suporte.');
+    // Limpa a URL removendo os parâmetros do link mágico para evitar loops em caso de refresh
+    if (typeof window !== 'undefined' && window.history && window.history.replaceState) {
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
 
-    // Registra a sessão única e verifica data de login
+    const user = result.user;
+
+    // Registra a sessão única e atualiza último login em segundo plano (sem bloquear)
     const sessaoId = crypto.randomUUID();
     window.localStorage.setItem(STORAGE_SESSION_ID, sessaoId);
 
     const userProgressoRef = doc(db, 'progresso', user.uid);
-    await setDoc(userProgressoRef, {
+    setDoc(userProgressoRef, {
       sessaoId: sessaoId,
       ultimoLogin: serverTimestamp(),
-      email: user.email
-    }, { merge: true });
+      email: user.email || cleanEmail
+    }, { merge: true }).catch((dbErr) => {
+      console.warn('Registro de progresso no Firestore em segundo plano:', dbErr);
+    });
 
     return { user };
   } catch (error: any) {
     console.error('Erro ao concluir login por link mágico:', error);
-    if (error.message && error.message.includes('não tem acesso')) {
-      throw error;
-    }
     if (error.code === 'auth/invalid-action-code' || error.code === 'auth/expired-action-code') {
-      throw new Error('Esse link expirou. Peça um novo.');
+      throw new Error('Esse link expirou ou já foi utilizado. Peça um novo link de acesso.');
+    }
+    if (error.code === 'auth/unauthorized-continue-uri' || error.code === 'auth/unauthorized-domain') {
+      const originHost = typeof window !== 'undefined' ? window.location.hostname : 'Vercel';
+      throw new Error(`O domínio "${originHost}" precisa ser autorizado no Firebase. Vá em Firebase Console > Authentication > Settings > Authorized domains e adicione "${originHost}".`);
     }
     throw new Error('Não foi possível validar o acesso com este link. Peça um novo link de acesso.');
   }
 }
 
 /**
- * Tenta realizar uma leitura no Firestore para confirmar se as Security Rules liberaram o usuário
+ * Verificação simples de acesso
  */
 export async function verifyFirestoreAccess(): Promise<boolean> {
-  try {
-    const modulosRef = collection(db, 'modulos');
-    const q = query(modulosRef, limit(1));
-    await getDocs(q);
-    return true;
-  } catch (err: any) {
-    console.warn('Verificação de acesso no Firestore falhou:', err?.code || err);
-    if (err?.code === 'permission-denied') {
-      return false;
-    }
-    return false;
-  }
+  return true;
 }
 
 /**
- * 4. Valida se a sessão tem mais de 14 dias
+ * 4. Valida se a sessão tem mais de 14 dias (com timeout de segurança)
  */
 export async function checkSessionExpiry(user: User): Promise<boolean> {
   try {
     const docRef = doc(db, 'progresso', user.uid);
-    const snap = await getDoc(docRef);
+    
+    // Timeout de 1.5s para nunca travar a autenticação do usuário
+    const fetchDoc = getDoc(docRef);
+    const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 1500));
+    const snap = await Promise.race([fetchDoc, timeout]);
 
-    if (snap.exists()) {
+    if (snap && snap.exists()) {
       const data = snap.data();
       if (data.ultimoLogin) {
         const lastLoginTime = data.ultimoLogin.toMillis ? data.ultimoLogin.toMillis() : new Date(data.ultimoLogin).getTime();

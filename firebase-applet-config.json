@@ -1,12 +1,12 @@
 {
-  "projectId": "gen-lang-client-0254253171",
-  "appId": "1:1012412258634:web:8d847454c03ef2048049b3",
-  "apiKey": "AIzaSyBdGBtXNGWUpr8GFB-jJUhFDrSj7v8ImeE",
-  "authDomain": "gen-lang-client-0254253171.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-caktomentoriarea-892b0e3b-a28a-4a10-bbe4-735db8b8db67",
-  "storageBucket": "gen-lang-client-0254253171.firebasestorage.app",
-  "messagingSenderId": "1012412258634",
-  "measurementId": "",
-  "oAuthClientId": "1012412258634-6v59dnnht5r83j2nc1uav2cji0jkigoi.apps.googleusercontent.com",
+  "projectId": "mentoria-35875",
+  "appId": "1:135789945736:web:3b9bdd4c19a9cc3e66d03d",
+  "apiKey": "AIzaSyDXK71uZC_hj7Et0XITcThAmDuqyBLSq2Y",
+  "authDomain": "mentoria-35875.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "mentoria-35875.firebasestorage.app",
+  "messagingSenderId": "135789945736",
+  "measurementId": "G-DRM05FZRNM",
+  "oAuthClientId": "",
   "recaptchaSiteKey": ""
 }
