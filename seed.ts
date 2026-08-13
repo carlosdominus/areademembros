@@ -29,21 +29,9 @@ async function seed() {
   const autorizados = [
     {
       email: 'carlos@dominus.site',
-      nome: 'Carlos Guilherme',
+      nome: 'Carlos Gabriel',
       ativo: true,
       turma: 'Turma 1 - Mentoria Dominus'
-    },
-    {
-      email: 'aluno@exemplo.com',
-      nome: 'Aluno Exemplo',
-      ativo: true,
-      turma: 'Turma 1'
-    },
-    {
-      email: 'bloqueado@exemplo.com',
-      nome: 'Aluno Inativo',
-      ativo: false,
-      turma: 'Turma 1'
     }
   ];
 

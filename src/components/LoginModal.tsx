@@ -753,7 +753,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                     setEmail(e.target.value);
                     if (aviso.show) setAviso((prev) => ({ ...prev, show: false }));
                   }}
-                  placeholder="voce@empresa.com"
+                  placeholder="seu@email.com"
                   autoComplete="email"
                   required
                   spellCheck="false"

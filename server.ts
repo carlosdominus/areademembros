@@ -337,26 +337,10 @@ function getDB(): DB {
           {
             id: '1',
             email: 'carlos@dominus.site',
-            name: 'Carlos Santos (Aluno Exemplo)',
+            name: 'Carlos Gabriel',
             purchaseDate: new Date().toISOString().split('T')[0],
             status: 'active',
             notes: 'Comprador verificado da Mentoria'
-          },
-          {
-            id: '2',
-            email: 'aluno@exemplo.com',
-            name: 'Aluno VIP Mentoria',
-            purchaseDate: new Date().toISOString().split('T')[0],
-            status: 'active',
-            notes: 'Acesso liberado'
-          },
-          {
-            id: '3',
-            email: 'guilherme@exemplo.com',
-            name: 'Guilherme Cordeiro',
-            purchaseDate: new Date().toISOString().split('T')[0],
-            status: 'active',
-            notes: 'Mentor Cacto'
           }
         ],
         pins: {},
@@ -372,10 +356,10 @@ function getDB(): DB {
             id: 'c1',
             lessonId: 'l0_1',
             userEmail: 'carlos@dominus.site',
-            userName: 'Carlos Santos',
+            userName: 'Carlos Gabriel',
             text: 'Excelente aula de introdução! Muito claro o direcionamento.',
             createdAt: new Date(Date.now() - 3600000).toISOString(),
-            avatarInitials: 'CS'
+            avatarInitials: 'CG'
           }
         ],
         auditLogs: [
@@ -385,7 +369,7 @@ function getDB(): DB {
             email: 'system',
             ip: '127.0.0.1',
             action: 'WHITELIST_UPDATED',
-            details: 'Sistema de autorização inicializado com 3 e-mails autorizados.',
+            details: 'Sistema de autorização inicializado com e-mail autorizado.',
             success: true
           }
         ],
@@ -400,7 +384,7 @@ function getDB(): DB {
     console.error('Error reading database file, using fallback', err);
     return {
       whitelist: [
-        { id: '1', email: 'carlos@dominus.site', name: 'Carlos Santos', purchaseDate: '2026-08-12', status: 'active' }
+        { id: '1', email: 'carlos@dominus.site', name: 'Carlos Gabriel', purchaseDate: '2026-08-12', status: 'active' }
       ],
       pins: {},
       sessions: {},
