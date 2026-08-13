@@ -262,13 +262,13 @@ export function AppContent() {
   // Render Tela de Carregamento Inicial
   if (authLoading) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center p-4 relative overflow-hidden bg-[#040607]">
-        <div className="adsata-bg-fixed" />
-        <div className="relative z-10 w-full max-w-sm backdrop-blur-2xl bg-[#06120e]/65 border border-[#22E025]/35 shadow-[0_20px_60px_rgba(0,0,0,0.85),0_0_50px_rgba(34,224,37,0.18)] rounded-3xl p-8 text-center space-y-4">
-          <div className="w-13 h-13 rounded-2xl bg-[#153A2D]/80 border border-[#22E025]/50 text-[#22E025] flex items-center justify-center mx-auto animate-spin shadow-[0_0_20px_rgba(34,224,37,0.35)]">
+      <div className="min-h-screen w-full flex items-center justify-center p-4 relative overflow-hidden bg-black">
+        <div className="grao" />
+        <div className="relative z-10 w-full max-w-sm vidro p-8 text-center space-y-4">
+          <div className="w-12 h-12 rounded-2xl bg-[rgba(65,242,10,0.08)] border border-[rgba(65,242,10,0.22)] text-[#41F20A] flex items-center justify-center mx-auto animate-spin">
             <RefreshCw className="w-6 h-6" />
           </div>
-          <p className="text-xs font-mono font-bold text-[#22E025] tracking-wider uppercase">
+          <p className="text-xs font-semibold text-[#41F20A] tracking-wider uppercase">
             Acessando Área de Membros...
           </p>
         </div>
@@ -287,8 +287,8 @@ export function AppContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#040607] text-[#F3F4F6] font-sans antialiased flex flex-col selection:bg-[#22E025] selection:text-[#050E06] relative">
-      <div className="adsata-bg-fixed" />
+    <div className="min-h-screen text-[#EDF4EB] font-body antialiased flex flex-col selection:bg-[#41F20A] selection:text-[#062800] relative">
+      <div className="grao" />
 
       {/* Cabecalho Autenticado */}
       <Cabecalho
@@ -348,17 +348,17 @@ export function AppContent() {
 
                 {aulaAtual && (
                   <>
-                    <div className="flex items-center gap-1.5 text-[14px] text-[#9CA3AF] font-medium mb-2">
-                      <Clock className="w-4 h-4 text-[#22E025]" />
+                    <div className="flex items-center gap-1.5 text-[14px] text-[#A7B7A4] font-medium mb-2">
+                      <Clock className="w-4 h-4 text-[#41F20A]" />
                       <span>{aulaAtual.duracaoMin} min</span>
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
                       <div className="flex-1 min-w-0">
-                        <h1 className="text-[26px] sm:text-[30px] font-extrabold text-white leading-tight tracking-tight mb-2">
+                        <h1 className="font-display text-[26px] sm:text-[30px] text-[#EDF4EB] mb-2">
                           {aulaAtual.titulo}
                         </h1>
-                        <p className="text-[14px] sm:text-[15px] text-[#9CA3AF] leading-relaxed font-normal">
+                        <p className="text-[14px] sm:text-[15px] text-[#D9E4D6] leading-relaxed font-normal">
                           {aulaAtual.descricao}
                         </p>
                       </div>
@@ -379,13 +379,13 @@ export function AppContent() {
                           href={aulaAtual.materialAnexo.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-[10px] bg-[#0B0F10] border border-[#1E272B] text-[13px] font-medium text-white hover:border-[#22E025]/50 hover:text-[#22E025] transition-all duration-150 cursor-pointer shadow-sm group"
+                          className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.11)] text-[13px] font-medium text-[#EDF4EB] hover:border-[#41F20A]/50 hover:text-[#41F20A] transition-all duration-150 cursor-pointer shadow-sm group"
                         >
-                          <div className="w-7 h-7 rounded-[8px] bg-[#153A2D] border border-[#22E025]/30 flex items-center justify-center text-[#22E025]">
+                          <div className="w-7 h-7 rounded-[8px] bg-[rgba(65,242,10,0.08)] border border-[rgba(65,242,10,0.22)] flex items-center justify-center text-[#41F20A]">
                             <FileText className="w-3.5 h-3.5" />
                           </div>
                           <span>{aulaAtual.materialAnexo.nome}</span>
-                          <Download className="w-3.5 h-3.5 ml-1 text-[#9CA3AF] group-hover:text-[#22E025]" />
+                          <Download className="w-3.5 h-3.5 ml-1 text-[#A7B7A4] group-hover:text-[#41F20A]" />
                         </a>
                       </div>
                     )}

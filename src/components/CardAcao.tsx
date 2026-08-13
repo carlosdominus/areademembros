@@ -21,27 +21,27 @@ export const CardAcao: React.FC<CardAcaoProps> = ({
 
   return (
     <div className="flex flex-col items-start sm:items-end gap-3 shrink-0">
-      {/* Botão "Aula Concluída" com canto arredondado 10px */}
+      {/* Botão "Aula Concluída" */}
       <button
         onClick={onToggleConcluida}
         disabled={loading}
-        className={`h-[38px] px-4 rounded-[10px] text-[13px] font-semibold flex items-center justify-center gap-2 cursor-pointer shadow-md transition-all disabled:opacity-50 ${
+        className={`h-[44px] px-5 rounded-full font-['Inter_Tight',sans-serif] font-semibold text-[13.5px] flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-50 ${
           concluida 
-            ? 'bg-[#22E025] hover:bg-[#1CC91F] text-[#050E06] shadow-[0_0_15px_rgba(34,224,37,0.3)]' 
-            : 'bg-[#0B0F10] border border-[#1E272B] hover:border-[#22E025]/50 text-white'
+            ? 'btn h-[44px] px-5 text-[#062800]' 
+            : 'btn-fantasma h-[44px] px-5 text-[#EDF4EB]'
         }`}
       >
         {loading ? (
-          <RefreshCw className="w-4 h-4 animate-spin text-[#22E025]" />
+          <RefreshCw className="w-4 h-4 animate-spin text-[#41F20A]" />
         ) : (
-          <Check className={`w-4 h-4 stroke-[2.5] ${concluida ? 'text-[#050E06]' : 'text-[#22E025]'}`} />
+          <Check className={`w-4 h-4 stroke-[2.5] ${concluida ? 'text-[#062800]' : 'text-[#41F20A]'}`} />
         )}
         <span>{concluida ? 'Aula Concluída' : 'Marcar como Concluída'}</span>
       </button>
 
       {/* Avaliação por estrelas */}
-      <div className="flex flex-col items-start sm:items-end gap-1">
-        <p className="text-[12px] font-medium text-[#9CA3AF]">
+      <div className="flex flex-col items-start sm:items-end gap-1 font-['Inter_Tight',sans-serif]">
+        <p className="text-[12.5px] font-normal text-[#A7B7A4]">
           O que você achou desta aula?
         </p>
         <div className="flex items-center gap-1">
@@ -62,8 +62,8 @@ export const CardAcao: React.FC<CardAcaoProps> = ({
                 <Star
                   className={`w-[20px] h-[20px] transition-colors duration-150 ${
                     active
-                      ? 'text-[#22E025] fill-[#22E025]'
-                      : 'text-[#6B7280] stroke-[1.5]'
+                      ? 'text-[#41F20A] fill-[#41F20A]'
+                      : 'text-[#A7B7A4]/40 stroke-[1.5]'
                   }`}
                 />
               </button>

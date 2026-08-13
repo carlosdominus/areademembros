@@ -47,9 +47,9 @@ export const SidebarCurso: React.FC<SidebarCursoProps> = ({
   if (loading) {
     return (
       <aside className="w-full h-full space-y-3 animate-pulse">
-        <div className="h-6 w-40 bg-[#1E272B] rounded-md" />
-        <div className="h-12 w-full bg-[#0B0F10] border border-[#1E272B] rounded-[10px]" />
-        <div className="h-40 w-full bg-[#0B0F10] border border-[#1E272B] rounded-[12px]" />
+        <div className="h-6 w-40 bg-[rgba(255,255,255,0.05)] rounded-md" />
+        <div className="h-12 w-full vidro rounded-[12px]" />
+        <div className="h-40 w-full vidro rounded-[20px]" />
       </aside>
     );
   }
@@ -59,15 +59,15 @@ export const SidebarCurso: React.FC<SidebarCursoProps> = ({
       ref={sidebarContainerRef}
       className="h-full flex flex-col bg-transparent"
     >
-      {/* Título (H2) "Conteúdo do Módulo" */}
+      {/* Título "Conteúdo do Módulo" */}
       <div className="pb-3 flex items-center justify-between shrink-0">
-        <h2 className="text-[18px] font-bold text-white tracking-tight">
+        <h2 className="font-['Inter_Tight',sans-serif] font-semibold text-[16px] text-[#EDF4EB] tracking-tight">
           Conteúdo do Módulo
         </h2>
         {onCloseMobile && (
           <button
             onClick={onCloseMobile}
-            className="lg:hidden p-1.5 rounded-[10px] bg-[#0B0F10] border border-[#1E272B] text-[#9CA3AF] hover:text-white flex items-center justify-center cursor-pointer"
+            className="lg:hidden p-1.5 rounded-[10px] bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.11)] text-[#A7B7A4] hover:text-[#EDF4EB] flex items-center justify-center cursor-pointer"
             title="Fechar"
             aria-label="Fechar conteúdo do módulo"
           >
@@ -76,23 +76,23 @@ export const SidebarCurso: React.FC<SidebarCursoProps> = ({
         )}
       </div>
 
-      {/* Seletor Customizado de Módulo (UI Própria do Sistema) */}
+      {/* Seletor Customizado de Módulo */}
       {modulos.length > 1 && moduloAtual && (
         <div className="mb-3 shrink-0 relative" ref={dropdownRef}>
           <button
             type="button"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="w-full bg-[#0B0F10] border border-[#1E272B] hover:border-[#22E025]/60 text-white font-semibold text-[13.5px] rounded-[10px] px-3.5 py-2.5 flex items-center justify-between gap-2 outline-none focus:border-[#22E025] cursor-pointer transition-all shadow-md group"
+            className="w-full vidro rounded-[12px] px-3.5 py-2.5 flex items-center justify-between gap-2 text-[#EDF4EB] font-['Inter_Tight',sans-serif] font-medium text-[13.5px] cursor-pointer hover:border-[#41F20A]/50 transition-all group"
           >
-            <span className="truncate group-hover:text-[#22E025] transition-colors">
+            <span className="truncate group-hover:text-[#41F20A] transition-colors">
               {moduloAtual.titulo} ({moduloAtual.aulas.length} aulas)
             </span>
-            <ChevronDown className={`w-4 h-4 text-[#22E025] shrink-0 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-4 h-4 text-[#41F20A] shrink-0 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
           </button>
 
           {/* Menu Dropdown Estilizado */}
           {isDropdownOpen && (
-            <div className="absolute left-0 right-0 top-[calc(100%+6px)] bg-[#0B0F10] border border-[#1E272B] rounded-[12px] p-1.5 shadow-2xl z-50 max-h-[260px] overflow-y-auto scrollbar-thin scrollbar-thumb-[#1E272B]">
+            <div className="absolute left-0 right-0 top-[calc(100%+6px)] vidro rounded-[14px] p-2 shadow-2xl z-50 max-h-[260px] overflow-y-auto scrollbar-thin">
               {modulos.map((m) => {
                 const isSelected = m.id === moduloAtualId;
                 return (
@@ -103,16 +103,16 @@ export const SidebarCurso: React.FC<SidebarCursoProps> = ({
                       if (onSelectModulo) onSelectModulo(m.id);
                       setIsDropdownOpen(false);
                     }}
-                    className={`w-full text-left px-3 py-2.5 rounded-[8px] text-[13px] font-medium flex items-center justify-between gap-2 cursor-pointer transition-all ${
+                    className={`w-full text-left px-3 py-2.5 rounded-[10px] text-[13px] font-['Inter_Tight',sans-serif] flex items-center justify-between gap-2 cursor-pointer transition-all ${
                       isSelected
-                        ? 'bg-[#153A2D] text-[#22E025] font-bold border border-[#22E025]/30'
-                        : 'text-[#D1D5DB] hover:bg-[#151A1C] hover:text-white'
+                        ? 'bg-[rgba(65,242,10,0.12)] text-[#41F20A] font-semibold border border-[rgba(65,242,10,0.30)]'
+                        : 'text-[#D9E4D6] hover:bg-[rgba(255,255,255,0.06)] hover:text-[#EDF4EB]'
                     }`}
                   >
                     <span className="truncate">
                       {m.titulo} ({m.aulas.length} aulas)
                     </span>
-                    {isSelected && <Check className="w-4 h-4 text-[#22E025] shrink-0" />}
+                    {isSelected && <Check className="w-4 h-4 text-[#41F20A] shrink-0" />}
                   </button>
                 );
               })}
@@ -144,7 +144,7 @@ export const SidebarCurso: React.FC<SidebarCursoProps> = ({
               onGoHome();
               if (onCloseMobile) onCloseMobile();
             }}
-            className="w-full mt-3 py-2.5 px-3 rounded-[10px] bg-[#0B0F10] border border-[#1E272B] hover:border-[#22E025]/40 text-[#22E025] font-semibold text-[13px] flex items-center justify-center gap-2 transition-all cursor-pointer"
+            className="w-full mt-3 btn-fantasma h-[42px] font-['Inter_Tight',sans-serif] text-[13.5px] text-[#41F20A] flex items-center justify-center gap-2 cursor-pointer"
           >
             <span>Ver Todos os Módulos</span>
           </button>

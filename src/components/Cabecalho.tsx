@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { BookOpen, LogOut, Menu, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { BookOpen, LogOut } from 'lucide-react';
 
 interface CabecalhoProps {
   nomePlataforma?: string;
@@ -13,14 +13,25 @@ interface CabecalhoProps {
 
 export const Cabecalho: React.FC<CabecalhoProps> = ({
   nomePlataforma = 'Área de Membros',
-  nomeAluno = 'Carlos Guilherme',
+  nomeAluno = 'Carlos Gabriel',
   emailAluno = 'carlos@dominus.site',
   onLogout,
-  onToggleSidebarMobile,
-  isSidebarMobileOpen = false,
   onGoHome
 }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
+
+  // Close menu on Esc key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowUserMenu(false);
+      }
+    };
+    if (showUserMenu) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showUserMenu]);
 
   const getInitials = (name: string) => {
     const parts = name.trim().split(' ');
@@ -31,73 +42,79 @@ export const Cabecalho: React.FC<CabecalhoProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 h-[64px] w-full bg-[#040607]/85 backdrop-blur-md border-b border-[#1E272B] px-4 sm:px-8 lg:px-10 flex items-center justify-between transition-all">
+    <header className="vidro-header h-[64px] w-full px-4 sm:px-8 lg:px-10 flex items-center justify-between">
       {/* Left: Logo Icon + Brand Name */}
       <div className="flex items-center gap-3">
-        {/* Mobile menu toggle for course sidebar */}
-        {onToggleSidebarMobile && (
-          <button
-            onClick={onToggleSidebarMobile}
-            className="lg:hidden p-2 min-h-[40px] min-w-[40px] rounded-[10px] bg-[#0B0F10] border border-[#1E272B] text-[#F3F4F6] hover:text-[#22E025] hover:border-[#22E025]/50 transition-all duration-150 flex items-center justify-center cursor-pointer"
-            title="Ver Conteúdo do Curso"
-            aria-label="Toggle Conteúdo do Curso"
-          >
-            {isSidebarMobileOpen ? (
-              <X className="w-5 h-5 text-[#22E025]" />
-            ) : (
-              <Menu className="w-5 h-5 text-[#22E025]" />
-            )}
-          </button>
-        )}
-
-        {/* Logo in rounded square */}
         <button
           onClick={onGoHome}
           className="flex items-center gap-3 group text-left cursor-pointer focus:outline-none"
         >
-          <div className="w-[36px] h-[36px] rounded-[10px] bg-[#153A2D] border border-[#22E025]/40 text-[#22E025] flex items-center justify-center font-bold shrink-0 shadow-[0_0_15px_rgba(34,224,37,0.25)] group-hover:border-[#22E025] transition-all">
-            <BookOpen className="w-4 h-4 text-[#22E025] stroke-[2.5]" />
+          {/* Quadrado de 40px, border-radius 12px, fundo rgba(65,242,10,.08), borda 1px solid rgba(65,242,10,.22), traço em --v-vivo */}
+          <div className="w-[40px] h-[40px] rounded-[12px] bg-[rgba(65,242,10,0.08)] border border-[rgba(65,242,10,0.22)] flex items-center justify-center shrink-0">
+            <BookOpen className="w-5 h-5 text-[#41F20A]" />
           </div>
           
-          {/* Brand Name */}
-          <span className="font-extrabold text-[16px] lg:text-[18px] text-white tracking-tight truncate group-hover:text-[#22E025] transition-colors">
+          {/* Texto "Área de Membros" em Inter Tight 600, 15px, --texto */}
+          <span className="font-['Inter_Tight',sans-serif] font-semibold text-[15px] text-[#EDF4EB] tracking-tight truncate group-hover:text-[#41F20A] transition-colors">
             {nomePlataforma}
           </span>
         </button>
       </div>
 
-      {/* Right: Circular User Avatar with Initials */}
+      {/* Right: Circular User Avatar */}
       <div className="relative">
         <button
           onClick={() => setShowUserMenu(!showUserMenu)}
-          className="w-[42px] h-[42px] rounded-full bg-[#153A2D] border border-[#22E025]/40 text-[#22E025] font-bold text-[14px] flex items-center justify-center hover:border-[#22E025] hover:shadow-[0_0_15px_rgba(34,224,37,0.4)] transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22E025]"
+          style={{
+            background: 'linear-gradient(180deg, #7BFA45 0%, #41F20A 46%, #2BB102 64%, #1A8300 100%)'
+          }}
+          className="w-[40px] h-[40px] rounded-full text-[#062800] font-semibold text-[14px] font-['Inter_Tight',sans-serif] flex items-center justify-center cursor-pointer focus-visible:outline-none hover:brightness-105 transition-all shadow-sm"
           title={nomeAluno}
           aria-label="Menu do usuário"
         >
           {getInitials(nomeAluno)}
         </button>
 
-        {/* User Menu Dropdown */}
+        {/* User Menu Dropdown (Vidro completo, border-radius 18px, 240px, p-4) */}
         {showUserMenu && (
           <>
             <div
               className="fixed inset-0 z-40"
               onClick={() => setShowUserMenu(false)}
             />
-            <div className="absolute right-0 mt-2 w-60 adsata-card shadow-2xl p-3.5 z-50 transition-all duration-150">
-              <div className="px-2 py-2 border-b border-[#1E272B] mb-2">
-                <p className="text-[13px] font-bold text-white truncate">{nomeAluno}</p>
-                <p className="text-[11px] text-[#9CA3AF] truncate">{emailAluno}</p>
+            <div className="absolute right-0 mt-2 w-[240px] vidro rounded-[18px] p-4 z-50 animate-menu-open">
+              <div className="flex items-center gap-3 mb-3">
+                <div
+                  style={{
+                    background: 'linear-gradient(180deg, #7BFA45 0%, #41F20A 46%, #2BB102 64%, #1A8300 100%)'
+                  }}
+                  className="w-[40px] h-[40px] rounded-full text-[#062800] font-semibold text-[14px] font-['Inter_Tight',sans-serif] flex items-center justify-center shrink-0"
+                >
+                  {getInitials(nomeAluno)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-['Inter_Tight',sans-serif] font-semibold text-[15px] text-[#EDF4EB] truncate leading-tight">
+                    {nomeAluno}
+                  </p>
+                  <p className="font-['Inter_Tight',sans-serif] font-normal text-[12.5px] text-[#A7B7A4] [overflow-wrap:anywhere] leading-tight mt-0.5">
+                    {emailAluno}
+                  </p>
+                </div>
               </div>
+
+              {/* Divisória 1px solid rgba(255,255,255,.08) com 12px de respiro */}
+              <div className="my-3 border-t border-[rgba(255,255,255,0.08)]" />
+
+              {/* Sair da plataforma */}
               <button
                 onClick={() => {
                   setShowUserMenu(false);
                   if (onLogout) onLogout();
                 }}
-                className="w-full text-left min-h-[38px] px-3 py-2 rounded-xl text-[12px] font-medium text-red-400 hover:bg-red-950/30 hover:text-red-300 flex items-center gap-2 transition-all duration-150 cursor-pointer"
+                className="w-full h-[40px] rounded-[10px] px-3 font-['Inter_Tight',sans-serif] font-medium text-[13.5px] text-[#D9E4D6] hover:bg-[rgba(248,113,113,0.10)] hover:text-[#FCA5A5] flex items-center gap-2.5 transition-colors cursor-pointer"
               >
-                <LogOut className="w-4 h-4 text-red-400" />
-                <span>Sair da Plataforma</span>
+                <LogOut className="w-4 h-4 text-[#A7B7A4] group-hover:text-[#FCA5A5]" />
+                <span>Sair da plataforma</span>
               </button>
             </div>
           </>

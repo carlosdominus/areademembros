@@ -28,21 +28,21 @@ export const BarraContexto: React.FC<BarraContextoProps> = ({
         {/* Botão Voltar */}
         <button
           onClick={onVoltar}
-          className="h-[36px] px-3.5 rounded-[10px] bg-[#0B0F10] border border-[#1E272B] hover:border-[#22E025]/50 text-[#22E025] font-semibold text-[13px] flex items-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-sm"
+          className="btn-fantasma h-[38px] px-4 text-[#41F20A] font-['Inter_Tight',sans-serif] font-semibold text-[13px] flex items-center gap-2 transition-all cursor-pointer shrink-0"
           title="Voltar para os Módulos"
         >
-          <ArrowLeft className="w-4 h-4 text-[#22E025]" />
+          <ArrowLeft className="w-4 h-4 text-[#41F20A]" />
           <span>Módulos</span>
         </button>
 
         {/* Ícone Livro + Breadcrumb */}
-        <div className="flex items-center gap-2 text-[13px] font-medium min-w-0 truncate">
-          <BookOpen className="w-4 h-4 text-[#22E025] shrink-0" />
-          <span className="text-white font-bold truncate">
+        <div className="flex items-center gap-2 text-[13.5px] font-['Inter_Tight',sans-serif] min-w-0 truncate">
+          <BookOpen className="w-4 h-4 text-[#41F20A] shrink-0" />
+          <span className="text-[#EDF4EB] font-semibold truncate">
             {moduloAtual.titulo}
           </span>
-          <span className="text-[#9CA3AF] shrink-0">/</span>
-          <span className="text-[#9CA3AF] font-normal truncate">
+          <span className="text-[#A7B7A4] shrink-0">/</span>
+          <span className="text-[#D9E4D6] font-normal truncate">
             {aulaAtual.titulo}
           </span>
         </div>
@@ -53,10 +53,10 @@ export const BarraContexto: React.FC<BarraContextoProps> = ({
         <button
           onClick={onAnterior}
           disabled={!temAnterior}
-          className={`h-[36px] px-3.5 rounded-[10px] bg-[#0B0F10] border border-[#1E272B] text-white font-semibold text-[13px] flex items-center gap-1.5 transition-all shadow-sm ${
+          className={`btn-fantasma h-[38px] px-3.5 text-[13px] font-['Inter_Tight',sans-serif] font-medium flex items-center gap-1.5 transition-all ${
             !temAnterior 
-              ? 'opacity-40 cursor-not-allowed border-[#1E272B]' 
-              : 'hover:border-[#22E025]/50 hover:text-[#22E025] cursor-pointer'
+              ? 'opacity-40 cursor-not-allowed' 
+              : 'hover:text-[#41F20A] cursor-pointer'
           }`}
           title="Aula Anterior"
         >
@@ -67,10 +67,10 @@ export const BarraContexto: React.FC<BarraContextoProps> = ({
         <button
           onClick={onProxima}
           disabled={!temProxima}
-          className={`h-[36px] px-3.5 rounded-[10px] bg-[#0B0F10] border border-[#1E272B] text-white font-semibold text-[13px] flex items-center gap-1.5 transition-all shadow-sm ${
+          className={`btn-fantasma h-[38px] px-3.5 text-[13px] font-['Inter_Tight',sans-serif] font-medium flex items-center gap-1.5 transition-all ${
             !temProxima 
-              ? 'opacity-40 cursor-not-allowed border-[#1E272B]' 
-              : 'hover:border-[#22E025]/50 hover:text-[#22E025] cursor-pointer'
+              ? 'opacity-40 cursor-not-allowed' 
+              : 'hover:text-[#41F20A] cursor-pointer'
           }`}
           title="Próxima Aula"
         >

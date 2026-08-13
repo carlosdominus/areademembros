@@ -11,12 +11,12 @@ export const Player: React.FC<PlayerProps> = ({ aula, loading = false }) => {
   // Skeleton loading state
   if (loading || !aula) {
     return (
-      <div className="relative w-full aspect-[16/9] rounded-2xl bg-[#0B0F10] border border-[#1E272B] overflow-hidden flex flex-col items-center justify-center animate-pulse">
-        <div className="w-16 h-16 rounded-full bg-[#153A2D]/50 border border-[#22E025]/20 flex items-center justify-center mb-3">
-          <Play className="w-8 h-8 text-[#22E025]/40 ml-1" />
+      <div className="relative w-full aspect-[16/9] vidro rounded-[22px] overflow-hidden flex flex-col items-center justify-center animate-pulse">
+        <div className="w-16 h-16 rounded-full bg-[rgba(65,242,10,0.08)] border border-[rgba(65,242,10,0.22)] flex items-center justify-center mb-3">
+          <Play className="w-8 h-8 text-[#41F20A]/50 ml-1" />
         </div>
-        <div className="h-4 w-48 bg-[#1E272B] rounded-full mb-2" />
-        <div className="h-3 w-32 bg-[#1E272B]/60 rounded-full" />
+        <div className="h-4 w-48 bg-[rgba(255,255,255,0.08)] rounded-full mb-2" />
+        <div className="h-3 w-32 bg-[rgba(255,255,255,0.05)] rounded-full" />
       </div>
     );
   }
@@ -26,12 +26,12 @@ export const Player: React.FC<PlayerProps> = ({ aula, loading = false }) => {
   const iframeSrc = `https://scripts.converteai.net/embed/html/player.html?id=${vturbId}`;
 
   return (
-    <div className="relative w-full aspect-[16/9] rounded-2xl bg-[#040607] overflow-hidden border border-[#1E272B] shadow-2xl group transition-all duration-300">
+    <div className="relative w-full aspect-[16/9] vidro rounded-[22px] overflow-hidden shadow-2xl group transition-all duration-300">
       {/* VTurb Player Embed */}
       <iframe
         id={`vturb-player-${aula.id}`}
         src={iframeSrc}
-        className="w-full h-full border-0 absolute inset-0 z-0 bg-[#040607]"
+        className="w-full h-full border-0 absolute inset-0 z-0 bg-black"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowFullScreen
         title={aula.titulo}
