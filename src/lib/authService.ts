@@ -3,6 +3,8 @@ import {
   isSignInWithEmailLink,
   signInWithEmailLink,
   signInAnonymously,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
   signOut,
   onAuthStateChanged,
   User
@@ -118,6 +120,114 @@ export async function signInDirectly(email: string): Promise<{ user: User }> {
     } as unknown as User;
 
     return { user: syntheticUser };
+  }
+}
+
+/**
+ * Autenticação por E-mail e Senha - Apenas para usuários cadastrados
+ */
+export async function signInWithPassword(email: string, password: string): Promise<{ user: User }> {
+  const cleanEmail = email.trim().toLowerCase();
+
+  if (!cleanEmail || !cleanEmail.includes('@')) {
+    throw new Error('E-mail inválido. Digite o e-mail completo com @ e domínio.');
+  }
+
+  if (!password) {
+    throw new Error('Digite a senha da sua conta.');
+  }
+
+  try {
+    const result = await signInWithEmailAndPassword(auth, cleanEmail, password);
+    const user = result.user;
+
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(STORAGE_DIRECT_EMAIL_KEY, cleanEmail);
+      const sessaoId = crypto.randomUUID();
+      window.localStorage.setItem(STORAGE_SESSION_ID, sessaoId);
+
+      const userProgressoRef = doc(db, 'progresso', user.uid);
+      setDoc(userProgressoRef, {
+        sessaoId: sessaoId,
+        ultimoLogin: serverTimestamp(),
+        email: cleanEmail
+      }, { merge: true }).catch((err) => {
+        console.warn('Registro de progresso no login por senha:', err);
+      });
+    }
+
+    return { user };
+  } catch (error: any) {
+    console.warn('Erro ao autenticar no Firebase Auth:', error?.code || error?.message);
+
+    if (error.code === 'auth/user-not-found') {
+      const err = new Error('E-mail não cadastrado. Use o e-mail que você cadastrou na compra.');
+      (err as any).code = 'auth/user-not-found';
+      throw err;
+    }
+
+    if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+      const err = new Error('E-mail ou senha incorretos. Confira os dados e tente de novo.');
+      (err as any).code = 'auth/invalid-credential';
+      throw err;
+    }
+
+    if (error.code === 'auth/invalid-email') {
+      const err = new Error('E-mail inválido. Digite o endereço completo, com @ e domínio.');
+      (err as any).code = 'auth/invalid-email';
+      throw err;
+    }
+
+    if (error.code === 'auth/user-disabled') {
+      const err = new Error('Acesso suspenso. Fale com o suporte pra reativar sua conta.');
+      (err as any).code = 'auth/user-disabled';
+      throw err;
+    }
+
+    if (error.code === 'auth/too-many-requests') {
+      const err = new Error('Muitas tentativas. Espere alguns minutos antes de tentar de novo.');
+      (err as any).code = 'auth/too-many-requests';
+      throw err;
+    }
+
+    if (error.code === 'auth/network-request-failed') {
+      const err = new Error('Sem conexão. Verifique sua internet e tente de novo.');
+      (err as any).code = 'auth/network-request-failed';
+      throw err;
+    }
+
+    const customErr = new Error(error.message || 'E-mail ou senha incorretos. Confira os dados e tente de novo.');
+    (customErr as any).code = error.code || 'auth/login-failed';
+    throw customErr;
+  }
+}
+
+/**
+ * Envia e-mail de redefinição de senha para usuários cadastrados
+ */
+export async function resetUserPassword(email: string): Promise<void> {
+  const cleanEmail = email.trim().toLowerCase();
+  if (!cleanEmail || !cleanEmail.includes('@')) {
+    throw new Error('Digite seu e-mail primeiro.');
+  }
+
+  try {
+    await sendPasswordResetEmail(auth, cleanEmail);
+  } catch (error: any) {
+    console.warn('Erro ao enviar e-mail de recuperação de senha:', error);
+    if (error.code === 'auth/user-not-found') {
+      const err = new Error('E-mail não cadastrado. Use o e-mail que você cadastrou na compra.');
+      (err as any).code = 'auth/user-not-found';
+      throw err;
+    }
+    if (error.code === 'auth/invalid-email') {
+      const err = new Error('E-mail inválido. Digite o endereço completo com @ e domínio.');
+      (err as any).code = 'auth/invalid-email';
+      throw err;
+    }
+    const customErr = new Error('Não foi possível enviar o link de troca de senha. Tente em instantes.');
+    (customErr as any).code = error.code || 'auth/reset-failed';
+    throw customErr;
   }
 }
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { sendMagicLink, completeMagicLinkSignIn, checkIsMagicLink, signInDirectly } from '../lib/authService';
+import { signInWithPassword, resetUserPassword, checkIsMagicLink, completeMagicLinkSignIn } from '../lib/authService';
 
 interface LoginModalProps {
   onLoginSuccess: () => void;
@@ -7,18 +7,20 @@ interface LoginModalProps {
 }
 
 const AJUSTES = {
-  desfoque: 34,     // px de blur por cima do canvas — o "vidro fosco"
-  escala:   1.00,   // < 1 = faixas mais largas | > 1 = mais faixas
-  vel:      1.00,   // velocidade do movimento
-  brilho:   1.00,   // clareia/escurece tudo
-  cursor:   1.00,   // 0 desliga a reação ao mouse
-  empurra:  0.42,   // quanto o cursor entorta as faixas
-  acende:   0.85,   // quanto o cursor ilumina o que já tem cor
+  desfoque:  16,     // px de blur por cima do canvas
+  escala:    1.00,   // > 1 = mais faixas e mais finas
+  vel:       1.00,   // velocidade do movimento
+  brilho:    1.00,   // clareia/escurece tudo
+  cursor:    1.00,   // 0 desliga a reação ao mouse
+  empurra:   0.30,   // quanto o cursor entorta as faixas
+  acende:    0.80,   // quanto o cursor ilumina o que já tem cor
+  miolo:     0.10,   // 0 = miolo totalmente preto | 1 = sem escurecer
+  miolo_raio:1.35,   // folga em volta do card que também escurece
   cores: {
-    corpo:  '#0E5C18',   // verde escuro, o corpo do vidro
-    vivo:   '#2BB102',   // verde do site
-    risco:  '#C4FF9E',   // risco claro/amarelado na quina
-    azul:   '#0B5D8A'    // a mancha azulada
+    corpo: '#0C4A14',   // verde escuro, o corpo da faixa
+    vivo:  '#2BB102',   // verde do site
+    risco: '#DFFFB0',   // quina clara/amarelada
+    azul:  '#0C6C93'    // o azul-petróleo da referência
   }
 };
 
@@ -43,6 +45,10 @@ uniform float u_escala;
 uniform float u_empurra;
 uniform float u_acende;
 uniform float u_brilho;
+uniform vec2  u_maskC;      /* centro do card, no espaço de p */
+uniform vec2  u_maskR;      /* raio do card, no espaço de p   */
+uniform float u_miolo;
+uniform float u_mioloRaio;
 uniform vec3  u_corpo;
 uniform vec3  u_vivo;
 uniform vec3  u_risco;
@@ -79,40 +85,46 @@ void main(){
   vec2 p = (vUv - 0.5) * vec2(sa, 1.0);
 
   vec2  md   = p - u_mouse;
-  float infl = exp(-dot(md, md) * 2.2) * u_mstr;
+  float infl = exp(-dot(md, md) * 2.4) * u_mstr;
   p += md * infl * u_empurra;
 
   float t = u_time;
-  vec2  q = p * vec2(1.0, 0.55) * u_escala;
 
-  float a = snoise(q * 0.52 + vec2( t * 0.020,  t * 0.055));
-  float b = snoise(q * 0.94 + vec2(-t * 0.034,  t * 0.028) + a * 1.25);
-  float c = snoise(q * 1.60 + vec2( t * 0.026, -t * 0.040) + b * 0.60);
+  vec2 q = p * vec2(1.0, 0.28) * u_escala;
 
-  float fx = p.x * 1.30 * u_escala + a * 1.95 + b * 0.90 + c * 0.30;
-  float s  = sin(fx * 2.35) * 0.5 + 0.5;
+  float w1 = snoise(q * 0.85 + vec2( t * 0.022,  t * 0.055));
+  float w2 = snoise(q * 1.70 + vec2(-t * 0.030,  t * 0.038) + w1 * 0.75);
 
-  float corpo  = pow(s,  3.2);
-  float nucleo = pow(s,  8.0);
-  float risco  = pow(s, 20.0);
+  float leque = 3.5 + (p.y + 0.5) * 1.7;
+  float fx = p.x * leque * u_escala + w1 * 2.1 + w2 * 0.85 + t * 0.05;
 
-  float mask = smoothstep(-0.35, 0.55, snoise(q * 0.40 + vec2(-t * 0.030, t * 0.020)));
-  corpo  *= 0.30 + mask * 0.90;
-  nucleo *= mask;
-  risco  *= smoothstep(0.45, 0.95, mask);
+  float s = sin(fx * 2.15) * 0.5 + 0.5;
+
+  float corpo  = pow(s,  6.0);
+  float nucleo = pow(s, 17.0);
+  float risco  = pow(s, 52.0);
+
+  float mask = smoothstep(-0.40, 0.60, snoise(q * 0.42 + vec2(-t * 0.028, t * 0.018)));
+  float alto = smoothstep(-0.30, 0.75, snoise(q * 0.62 + vec2( t * 0.031, t * 0.024) + 7.1));
+
+  corpo  *= 0.28 + mask * 0.95;
+  nucleo *= mask * (0.35 + alto * 0.85);
+  risco  *= smoothstep(0.55, 1.00, mask * alto);
+
+  float hue = smoothstep(-0.25, 0.65, snoise(q * 0.5 + vec2(-t * 0.02, t * 0.03) + 3.3));
+  vec3 tom = mix(u_vivo, u_azul, hue * 0.75);
 
   vec3 col = vec3(0.0);
-  col += u_corpo * corpo  * 0.60;
-  col += u_vivo  * nucleo * 0.80;
-  col += u_risco * risco  * 0.55;
+  col += u_corpo * corpo  * 0.62;
+  col += tom     * nucleo * 0.95;
+  col += u_risco * risco  * 0.85;
 
-  vec2 tc = vec2(-0.50 + sin(t * 0.045) * 0.08, -0.14 + cos(t * 0.037) * 0.06);
-  vec2 td = (p - tc) * vec2(1.0, 1.45);
-  col += u_azul * exp(-dot(td, td) * 2.6) * (0.22 + corpo * 1.1) * 0.95;
-
-  col *= mix(0.42, 1.0, smoothstep(1.55, 0.22, length(p * vec2(0.85, 1.0))));
+  col *= mix(0.40, 1.0, smoothstep(1.60, 0.20, length(p * vec2(0.85, 1.0))));
 
   col += col * infl * u_acende;
+
+  float dm = length((p - u_maskC) / max(u_maskR, vec2(0.001)));
+  col *= mix(u_miolo, 1.0, smoothstep(1.0, 1.0 + u_mioloRaio, dm));
 
   gl_FragColor = vec4(col * u_brilho, 1.0);
 }`;
@@ -122,47 +134,63 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   initialErrorMessage
 }) => {
   const [email, setEmail] = useState('');
-  const [sentEmail, setSentEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [resending, setResending] = useState(false);
-  const [validatingMagicLink, setValidatingMagicLink] = useState(false);
-  const [cardState, setCardState] = useState<'idle' | 'sent' | 'error'>(initialErrorMessage ? 'error' : 'idle');
-  const [errCode, setErrCode] = useState<string>(initialErrorMessage || 'auth/quota-exceeded');
-  const [errDesc, setErrDesc] = useState<string>('O limite de envios foi atingido. Espere alguns minutos ou acesse diretamente.');
+
+  const [aviso, setAviso] = useState<{
+    show: boolean;
+    title: string;
+    text: string;
+    code?: string;
+    isOk?: boolean;
+  }>({
+    show: !!initialErrorMessage,
+    title: initialErrorMessage ? 'Aviso de Acesso' : '',
+    text: initialErrorMessage || ''
+  });
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const stageRef = useRef<HTMLElement>(null);
   const cardRef = useRef<HTMLElement>(null);
-  const emailInputRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
 
-  // Check if URL is magic link on mount
+  // Magic Link verification check on mount
   useEffect(() => {
     if (checkIsMagicLink()) {
-      setValidatingMagicLink(true);
       setLoading(true);
+      setAviso({
+        show: true,
+        title: 'Validando Acesso',
+        text: 'Aguarde um instante...',
+        isOk: true
+      });
       completeMagicLinkSignIn()
         .then(() => {
           onLoginSuccess();
         })
         .catch((err: any) => {
-          console.error('Erro ao completar magic link:', err);
-          setErrCode(err.code || 'link-expirado');
-          setErrDesc(err.message || 'Esse link expirou ou já foi utilizado.');
-          setCardState('error');
+          setAviso({
+            show: true,
+            title: 'Link Expirado',
+            text: err.message || 'Esse link expirou ou já foi utilizado.',
+            code: err.code || ''
+          });
         })
         .finally(() => {
           setLoading(false);
-          setValidatingMagicLink(false);
         });
     }
   }, [onLoginSuccess]);
 
-  // WebGL Background canvas effect
+  // WebGL Shader Background setup
   useEffect(() => {
     const cvs = canvasRef.current;
-    if (!cvs) return;
+    const stage = stageRef.current;
+    if (!cvs || !stage) return;
 
-    const gl = cvs.getContext('webgl', { alpha: false, antialias: false, powerPreference: 'low-power' })
-            || (cvs.getContext('experimental-webgl') as WebGLRenderingContext | null);
+    const gl = (cvs.getContext('webgl', { alpha: false, antialias: false, powerPreference: 'low-power' }) ||
+      cvs.getContext('experimental-webgl')) as WebGLRenderingContext | null;
 
     if (!gl) return;
 
@@ -216,6 +244,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       empurra: u('u_empurra'),
       acende: u('u_acende'),
       brilho: u('u_brilho'),
+      maskC: u('u_maskC'),
+      maskR: u('u_maskR'),
+      miolo: u('u_miolo'),
+      mioloRaio: u('u_mioloRaio'),
       corpo: u('u_corpo'),
       vivo: u('u_vivo'),
       risco: u('u_risco'),
@@ -226,6 +258,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     gl.uniform1f(L.empurra, AJUSTES.empurra);
     gl.uniform1f(L.acende, AJUSTES.acende);
     gl.uniform1f(L.brilho, AJUSTES.brilho);
+    gl.uniform1f(L.miolo, AJUSTES.miolo);
+    gl.uniform1f(L.mioloRaio, AJUSTES.miolo_raio);
     gl.uniform3f(L.corpo, ...hex(AJUSTES.cores.corpo));
     gl.uniform3f(L.vivo, ...hex(AJUSTES.cores.vivo));
     gl.uniform3f(L.risco, ...hex(AJUSTES.cores.risco));
@@ -236,37 +270,49 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     const MARGEM = 90;
     let W = 1, H = 1, sa = 1;
 
+    const medirMascara = () => {
+      if (!stage) return;
+      const r = stage.getBoundingClientRect();
+      const cx = ((r.left + r.width / 2 + MARGEM) / W - 0.5) * sa;
+      const cy = 0.5 - (r.top + r.height / 2 + MARGEM) / H;
+      const rx = ((r.width / 2 + 70) / W) * sa;
+      const ry = (r.height / 2 + 50) / H;
+      gl.uniform2f(L.maskC, cx, cy);
+      gl.uniform2f(L.maskR, rx, ry);
+    };
+
     const resize = () => {
       W = window.innerWidth + MARGEM * 2;
       H = window.innerHeight + MARGEM * 2;
-      cvs.width = Math.max(2, Math.floor(W * 0.55));
-      cvs.height = Math.max(2, Math.floor(H * 0.55));
+      cvs.width = Math.max(2, Math.floor(W * 0.70));
+      cvs.height = Math.max(2, Math.floor(H * 0.70));
       sa = cvs.width / cvs.height;
       gl.viewport(0, 0, cvs.width, cvs.height);
       gl.uniform2f(L.res, cvs.width, cvs.height);
+      medirMascara();
     };
 
     resize();
     window.addEventListener('resize', resize);
+    let ro: ResizeObserver | null = null;
+    if (window.ResizeObserver && stage) {
+      ro = new ResizeObserver(medirMascara);
+      ro.observe(stage);
+    }
 
-    const alvo = { x: 0, y: 0, f: 0 };
-    const atual = { x: 0, y: 0, f: 0 };
-
+    const alvo = { x: 0, y: 0, f: 0 }, atual = { x: 0, y: 0, f: 0 };
     const handlePointerMove = (e: PointerEvent) => {
       alvo.x = ((e.clientX + MARGEM) / W - 0.5) * sa;
-      alvo.y = (0.5 - (e.clientY + MARGEM) / H);
+      alvo.y = 0.5 - (e.clientY + MARGEM) / H;
       alvo.f = AJUSTES.cursor;
     };
-
     const handlePointerLeave = () => { alvo.f = 0; };
-    const handleBlur = () => { alvo.f = 0; };
 
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
     window.addEventListener('pointerleave', handlePointerLeave);
-    window.addEventListener('blur', handleBlur);
 
     const parado = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let rafId: number;
+    let raf: number;
     let t0 = performance.now();
 
     const frame = (agora: number) => {
@@ -278,7 +324,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       gl.uniform2f(L.mouse, atual.x, atual.y);
       gl.uniform1f(L.mstr, atual.f);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-      rafId = requestAnimationFrame(frame);
+      raf = requestAnimationFrame(frame);
     };
 
     if (parado) {
@@ -287,7 +333,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       gl.uniform1f(L.mstr, 0);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     } else {
-      rafId = requestAnimationFrame(frame);
+      raf = requestAnimationFrame(frame);
     }
 
     cvs.classList.add('on');
@@ -296,74 +342,98 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       window.removeEventListener('resize', resize);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerleave', handlePointerLeave);
-      window.removeEventListener('blur', handleBlur);
-      if (rafId) cancelAnimationFrame(rafId);
+      if (ro) ro.disconnect();
+      if (raf) cancelAnimationFrame(raf);
     };
   }, []);
 
-  // Card mouse movement effect for glass specular highlight
-  const handleCardPointerMove = (e: React.PointerEvent<HTMLElement>) => {
-    if (!cardRef.current) return;
-    const r = cardRef.current.getBoundingClientRect();
-    cardRef.current.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
-    cardRef.current.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
+  const handlePointerMoveCard = (e: React.PointerEvent<HTMLElement>) => {
+    const card = cardRef.current;
+    if (!card) return;
+    const r = card.getBoundingClientRect();
+    card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+    card.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
   };
 
-  const handleSendLink = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const value = email.trim();
-    if (!value || !value.includes('@')) {
-      if (emailInputRef.current) emailInputRef.current.focus();
+    setAviso((prev) => ({ ...prev, show: false }));
+
+    const cleanEmail = email.trim();
+    if (!cleanEmail.includes('@')) {
+      setAviso({
+        show: true,
+        title: 'E-mail inválido',
+        text: 'Digite o endereço completo, com @ e domínio.'
+      });
+      if (emailRef.current) emailRef.current.focus();
+      return;
+    }
+
+    if (!password) {
+      setAviso({
+        show: true,
+        title: 'Falta a senha',
+        text: 'Digite a senha da sua conta.'
+      });
       return;
     }
 
     setLoading(true);
 
     try {
-      await sendMagicLink(value);
-      setSentEmail(value);
-      setCardState('sent');
-    } catch (err: any) {
-      console.warn('Erro ao enviar magic link, disponibilizando fallback/erro:', err);
-      setErrCode(err.code || 'auth/quota-exceeded');
-      setErrDesc(err.message || 'O limite de envios foi atingido. Espere alguns minutos e peça o link de novo ou entre diretamente.');
-      setCardState('error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleResend = async () => {
-    if (!sentEmail || resending) return;
-    setResending(true);
-    try {
-      await sendMagicLink(sentEmail);
-    } catch (err: any) {
-      console.warn('Erro ao reenviar:', err);
-    } finally {
-      setTimeout(() => setResending(false), 3000);
-    }
-  };
-
-  const handleDirectAccess = async () => {
-    setLoading(true);
-    try {
-      await signInDirectly(email || sentEmail || 'carlos@dominus.site');
+      await signInWithPassword(cleanEmail, password);
+      setAviso({
+        show: true,
+        title: 'Tudo certo',
+        text: 'Entrando na área de membros…',
+        isOk: true
+      });
       onLoginSuccess();
     } catch (err: any) {
-      setErrCode('auth/network-failed');
-      setErrDesc(err.message || 'Falha na conexão. Tente novamente.');
-      setCardState('error');
+      console.warn('Falha no login:', err);
+      setAviso({
+        show: true,
+        title: err.code === 'auth/user-not-found' ? 'E-mail não cadastrado' : 'E-mail ou senha incorretos',
+        text: err.message || 'Confira os dados e tente de novo.',
+        code: err.code || ''
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleBackToIdle = () => {
-    setCardState('idle');
-    setTimeout(() => {
-      if (emailInputRef.current) emailInputRef.current.focus();
-    }, 50);
+  const handleForgotPassword = async () => {
+    const cleanEmail = email.trim();
+    if (!cleanEmail.includes('@')) {
+      setAviso({
+        show: true,
+        title: 'Digite seu e-mail primeiro',
+        text: 'Preencha o campo de e-mail acima e clique de novo.'
+      });
+      if (emailRef.current) emailRef.current.focus();
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await resetUserPassword(cleanEmail);
+      setAviso({
+        show: true,
+        title: 'Link de troca enviado',
+        text: `Veja a caixa de entrada de ${cleanEmail}.`,
+        isOk: true
+      });
+    } catch (err: any) {
+      setAviso({
+        show: true,
+        title: err.code === 'auth/user-not-found' ? 'E-mail não cadastrado' : 'Não foi possível enviar',
+        text: err.message || 'Tente de novo em instantes.',
+        code: err.code || ''
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -375,24 +445,25 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           --v-vivo:   #41F20A;
           --v-claro:  #C4FF9E;
 
-          --mist:     #DCE9DC;
-          --mist-dim: #94A794;
+          --texto:       #EDF4EB;
+          --texto-2:     #D9E4D6;
+          --texto-fraco: #A7B7A4;
           --r-card: 26px;
           --r-field: 14px;
         }
 
         .login-page-body {
-          font-family: 'Inter Tight', system-ui, -apple-system, sans-serif;
-          color: var(--mist);
-          min-height: 100dvh;
-          width: 100%;
+          position: fixed;
+          inset: 0;
+          z-index: 9999;
           display: grid;
           place-items: center;
           padding: 32px 20px;
           overflow: hidden;
           background: #000;
+          font-family: 'Inter Tight', system-ui, -apple-system, sans-serif;
+          color: var(--texto);
           -webkit-font-smoothing: antialiased;
-          position: relative;
         }
 
         #bg {
@@ -407,7 +478,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         #bg.on { opacity: 1; }
 
         .grain {
-          position: fixed; inset: -50%; z-index: 1; pointer-events: none; opacity: .055;
+          position: fixed; inset: -50%; z-index: 1; pointer-events: none; opacity: .05;
           background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
         }
 
@@ -417,21 +488,21 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           display: flex; flex-direction: column; align-items: center;
           animation: rise .9s cubic-bezier(.2,.7,.25,1) both;
         }
-        @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+        @keyframes rise { from { opacity:0; transform:translateY(14px); } }
 
-        h1.login-title {
+        h1.main-title {
           font-family: 'Bricolage Grotesque', system-ui, sans-serif;
           font-weight: 600;
           font-size: clamp(30px, 7.2vw, 43px);
           line-height: 1.08;
           letter-spacing: -.028em;
           text-align: center;
-          color: #F4FBF2;
+          color: #F6FBF5;
           margin-bottom: 34px;
           text-wrap: balance;
-          text-shadow: 0 2px 34px rgba(0,0,0,.6);
+          text-shadow: 0 2px 34px rgba(0,0,0,.7);
         }
-        h1.login-title em {
+        h1.main-title em {
           font-style: normal;
           color: transparent;
           background-image: linear-gradient(110deg,
@@ -482,36 +553,68 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
         .card-label {
           display: flex; align-items: center; gap: 8px;
-          font-size: 12px; font-weight: 500; letter-spacing: .04em;
-          color: var(--mist-dim);
+          font-size: 12.5px; font-weight: 500; letter-spacing: .03em;
+          color: var(--texto-2);
           margin-bottom: 22px;
         }
-        .card-label svg { width: 14px; height: 14px; stroke: var(--v-base); }
+        .card-label svg { width: 14px; height: 14px; stroke: var(--v-vivo); }
 
-        .login-label { display: block; font-size: 13px; font-weight: 500; color: var(--mist); margin-bottom: 9px; }
+        .campo { margin-bottom: 14px; }
+        .campo:last-of-type { margin-bottom: 0; }
 
-        .login-input {
+        .linha-label { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 9px; }
+        label { font-size: 13px; font-weight: 500; color: var(--texto-2); }
+
+        .esqueci {
+          background: none; border: none; padding: 0;
+          font: 500 12px 'Inter Tight', sans-serif;
+          color: var(--texto-2);
+          text-decoration: underline; text-underline-offset: 3px;
+          text-decoration-color: rgba(217,228,214,.45);
+          cursor: pointer;
+          transition: color .18s, text-decoration-color .18s;
+        }
+        .esqueci:hover { color: var(--v-vivo); text-decoration-color: rgba(65,242,10,.6); }
+        .esqueci:focus-visible { outline: 2px solid rgba(65,242,10,.6); outline-offset: 3px; border-radius: 4px; }
+
+        .wrap-senha { position: relative; }
+
+        input[type=email], input[type=password], input[type=text] {
           width: 100%; height: 52px; padding: 0 16px;
           font: 400 15px/1 'Inter Tight', sans-serif;
-          color: #F4FBF2;
-          background: rgba(2,8,2,.42);
-          border: 1px solid rgba(255,255,255,.10);
+          color: #F6FBF5;
+          background: rgba(2,8,2,.44);
+          border: 1px solid rgba(255,255,255,.11);
           border-radius: var(--r-field);
           box-shadow: inset 0 2px 8px rgba(0,0,0,.42);
           outline: none;
           transition: border-color .2s, box-shadow .2s, background .2s;
         }
-        .login-input::placeholder { color: #63775F; }
-        .login-input:focus {
+        .wrap-senha input { padding-right: 74px; }
+        input::placeholder { color: #6C7F69; }
+        input:focus {
           border-color: rgba(65,242,10,.45);
-          background: rgba(2,8,2,.55);
+          background: rgba(2,8,2,.56);
           box-shadow: inset 0 2px 8px rgba(0,0,0,.42), 0 0 0 3px rgba(43,177,2,.22);
         }
+
+        .ver-senha {
+          position: absolute; right: 6px; top: 6px;
+          height: 40px; padding: 0 12px;
+          background: rgba(255,255,255,.07);
+          border: 1px solid rgba(255,255,255,.09);
+          border-radius: 10px;
+          font: 500 12.5px 'Inter Tight', sans-serif;
+          color: var(--texto-2);
+          cursor: pointer;
+          transition: background .18s;
+        }
+        .ver-senha:hover { background: rgba(255,255,255,.13); }
 
         .cta {
           position: relative;
           display: flex; align-items: center; justify-content: center;
-          width: 100%; height: 52px; margin-top: 18px;
+          width: 100%; height: 52px; margin-top: 20px;
           border: none; border-radius: 999px;
           font: 600 15.5px/1 'Inter Tight', sans-serif;
           letter-spacing: -.005em;
@@ -553,50 +656,33 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         .cta:focus-visible { outline: 2px solid var(--v-claro); outline-offset: 4px; }
         .cta[disabled] { opacity: .62; cursor: wait; transform: none; }
 
-        .cta-ghost {
-          display: flex; align-items: center; justify-content: center; gap: 9px;
-          width: 100%; height: 50px; margin-top: 6px;
-          border: 1px solid rgba(255,255,255,.13);
-          border-radius: 999px;
-          font: 600 14.5px/1 'Inter Tight', sans-serif;
-          color: #E4F7DC;
-          background: linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.03));
-          box-shadow: inset 0 1px 0 rgba(255,255,255,.26), 0 6px 18px -10px rgba(0,0,0,.9);
-          cursor: pointer;
-          transition: background .18s, transform .14s;
+        .hint {
+          margin-top: 16px;
+          font-size: 12.5px; line-height: 1.5;
+          color: var(--texto-2);
+          text-align: center;
         }
-        .cta-ghost:hover { background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.05)); }
-        .cta-ghost:active { transform: translateY(1px); }
-        .cta-ghost:focus-visible { outline: 2px solid rgba(65,242,10,.6); outline-offset: 3px; }
-        .cta-ghost svg { width: 15px; height: 15px; stroke: var(--v-vivo); }
 
-        .hint { margin-top: 16px; font-size: 12.5px; line-height: 1.5; color: var(--mist-dim); text-align: center; }
-
-        .linkish {
-          display: block; width: 100%; margin-top: 14px;
-          background: none; border: none;
-          font: 500 13px 'Inter Tight', sans-serif;
-          color: var(--mist-dim);
-          text-decoration: underline; text-underline-offset: 3px;
-          cursor: pointer;
+        .aviso {
+          display: flex; gap: 11px;
+          padding: 13px 15px; margin-bottom: 18px;
+          border-radius: 16px;
+          font-size: 13px; line-height: 1.5;
+          background: rgba(80,20,24,.42);
+          border: 1px solid rgba(248,113,113,.26);
+          color: #F5D6D6;
         }
-        .linkish:hover { color: var(--mist); }
+        .aviso svg { width: 16px; height: 16px; flex: none; margin-top: 1px; stroke: #F87171; }
+        .aviso strong { display: block; font-weight: 600; margin-bottom: 3px; color: #FCA5A5; }
+        .aviso code { display: inline-block; margin-top: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; opacity: .5; }
 
-        .notice { display: flex; gap: 11px; padding: 14px 15px; border-radius: 16px; font-size: 13px; line-height: 1.5; margin-bottom: 18px; }
-        .notice svg { width: 16px; height: 16px; flex: none; margin-top: 1px; }
-        .notice strong { display: block; font-weight: 600; margin-bottom: 3px; }
-        .notice code { display: inline-block; margin-top: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; opacity: .55; }
-        .notice-ok { background: rgba(20,70,10,.36); border: 1px solid rgba(65,242,10,.26); color: #D6EFCB; }
-        .notice-ok svg { stroke: var(--v-vivo); }
-        .notice-ok strong { color: var(--v-vivo); }
-        .notice-bad { background: rgba(80,20,24,.4); border: 1px solid rgba(248,113,113,.26); color: #F3CFCF; }
-        .notice-bad svg { stroke: #F87171; }
-        .notice-bad strong { color: #FCA5A5; }
-        .email-chip { color: var(--v-vivo); font-weight: 600; }
+        .aviso.ok { background: rgba(20,70,10,.36); border-color: rgba(65,242,10,.26); color: #D8EFCE; }
+        .aviso.ok svg { stroke: var(--v-vivo); }
+        .aviso.ok strong { color: var(--v-vivo); }
 
         @media (max-width: 420px) {
           .card { padding: 24px 20px 22px; border-radius: 22px; }
-          h1.login-title { margin-bottom: 26px; }
+          h1.main-title { margin-bottom: 26px; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -609,153 +695,116 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         <canvas id="bg" ref={canvasRef} aria-hidden="true" />
         <div className="grain" aria-hidden="true" />
 
-        <main className="stage">
-          {/* ★ FRASE */}
-          <h1 className="login-title">
+        <main className="stage" ref={stageRef}>
+          <h1 className="main-title">
             Você não veio aprender.<br />
             <em>Veio operar.</em>
           </h1>
 
           <section
             className="card"
-            id="card"
             ref={cardRef}
-            data-state={validatingMagicLink ? 'idle' : cardState}
-            onPointerMove={handleCardPointerMove}
+            onPointerMove={handlePointerMoveCard}
           >
-            <div className="card-label" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <div className="card-label">
+              <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <rect x="3" y="11" width="18" height="11" rx="2" />
                 <path d="M7 11V7a5 5 0 0 1 10 0v4" />
               </svg>
               Área de membros
             </div>
 
-            {/* ESTADO DE VALIDAÇÃO DO LINK */}
-            {validatingMagicLink ? (
-              <div style={{ padding: '20px 0', textAlign: 'center' }}>
-                <p style={{ fontWeight: 600, color: '#F4FBF2', marginBottom: '8px' }}>
-                  Validando seu acesso...
-                </p>
-                <p style={{ fontSize: '13px', color: 'var(--mist-dim)' }}>
-                  Aguarde um instante enquanto confirmamos seu login.
-                </p>
+            {aviso.show && (
+              <div className={`aviso ${aviso.isOk ? 'ok' : ''}`} role="alert">
+                <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  {aviso.isOk ? (
+                    <>
+                      <path d="M22 11.1V12a10 10 0 1 1-5.9-9.1" />
+                      <path d="m9 11 3 3L22 4" />
+                    </>
+                  ) : (
+                    <>
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 8v5" />
+                      <path d="M12 16h.01" />
+                    </>
+                  )}
+                </svg>
+                <div>
+                  <strong>{aviso.title}</strong>
+                  <span>{aviso.text}</span>
+                  {aviso.code && <code>{aviso.code}</code>}
+                </div>
               </div>
-            ) : (
-              <>
-                {/* ESTADO 1 · pedir o e-mail */}
-                {cardState === 'idle' && (
-                  <div data-when="idle">
-                    <form id="form" onSubmit={handleSendLink} noValidate>
-                      <label htmlFor="email" className="login-label">Seu e-mail</label>
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        ref={emailInputRef}
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="voce@empresa.com"
-                        autoComplete="email"
-                        required
-                        spellCheck="false"
-                        className="login-input"
-                        disabled={loading}
-                      />
-                      <button type="submit" className="cta" id="submit" disabled={loading}>
-                        {loading ? 'Enviando…' : 'Receber link de acesso'}
-                      </button>
-                    </form>
-                    <p className="hint">Sem senha. Você entra pelo link que chega no seu e-mail.</p>
-                    
-                    <button
-                      type="button"
-                      onClick={handleDirectAccess}
-                      disabled={loading}
-                      className="linkish"
-                      style={{ marginTop: '16px', opacity: 0.85 }}
-                    >
-                      ⚡ Entrar direto sem aguardar o e-mail
-                    </button>
-                  </div>
-                )}
-
-                {/* ESTADO 2 · link enviado */}
-                {cardState === 'sent' && (
-                  <div data-when="sent">
-                    <div className="notice notice-ok">
-                      <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M22 11.1V12a10 10 0 1 1-5.9-9.1" />
-                        <path d="m9 11 3 3L22 4" />
-                      </svg>
-                      <div>
-                        <strong>Link enviado</strong>
-                        Mandamos o acesso para <span className="email-chip" id="sent-email">{sentEmail || email}</span>.
-                        Abra a mensagem e clique em entrar.
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      className="cta-ghost"
-                      id="resend"
-                      onClick={handleResend}
-                      disabled={resending}
-                      style={{ opacity: resending ? 0.6 : 1 }}
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 12a9 9 0 1 1-2.6-6.4" />
-                        <path d="M21 3v6h-6" />
-                      </svg>
-                      {resending ? 'Enviando novamente...' : 'Enviar o link de novo'}
-                    </button>
-
-                    <button
-                      type="button"
-                      className="cta"
-                      onClick={handleDirectAccess}
-                      style={{ marginTop: '10px' }}
-                    >
-                      Entrar direto na Área de Membros
-                    </button>
-
-                    <button type="button" className="linkish" data-back onClick={handleBackToIdle}>
-                      Usar outro e-mail
-                    </button>
-                  </div>
-                )}
-
-                {/* ESTADO 3 · erro */}
-                {cardState === 'error' && (
-                  <div data-when="error">
-                    <div className="notice notice-bad">
-                      <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10" />
-                        <path d="M12 8v5" />
-                        <path d="M12 16h.01" />
-                      </svg>
-                      <div>
-                        <strong>Aviso de Acesso</strong>
-                        {errDesc}
-                        <code id="err-code">{errCode}</code>
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      className="cta"
-                      onClick={handleDirectAccess}
-                      style={{ marginBottom: '8px' }}
-                    >
-                      Entrar direto na Área de Membros
-                    </button>
-
-                    <button type="button" className="cta-ghost" data-back onClick={handleBackToIdle}>
-                      Tentar de novo por e-mail
-                    </button>
-                  </div>
-                )}
-              </>
             )}
+
+            <form onSubmit={handleSubmit} noValidate>
+              <div className="campo">
+                <div className="linha-label">
+                  <label htmlFor="email">Seu e-mail</label>
+                </div>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  ref={emailRef}
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (aviso.show) setAviso((prev) => ({ ...prev, show: false }));
+                  }}
+                  placeholder="voce@empresa.com"
+                  autoComplete="email"
+                  required
+                  spellCheck="false"
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="campo">
+                <div className="linha-label">
+                  <label htmlFor="senha">Senha</label>
+                  <button
+                    type="button"
+                    className="esqueci"
+                    onClick={handleForgotPassword}
+                    disabled={loading}
+                  >
+                    Esqueceu a senha?
+                  </button>
+                </div>
+                <div className="wrap-senha">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    id="senha"
+                    name="senha"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (aviso.show) setAviso((prev) => ({ ...prev, show: false }));
+                    }}
+                    placeholder="••••••••"
+                    autoComplete="current-password"
+                    required
+                    disabled={loading}
+                  />
+                  <button
+                    type="button"
+                    className="ver-senha"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? 'Esconder senha' : 'Mostrar senha'}
+                  >
+                    {showPassword ? 'esconder' : 'mostrar'}
+                  </button>
+                </div>
+              </div>
+
+              <button type="submit" className="cta" disabled={loading}>
+                {loading ? 'Entrando…' : 'Entrar'}
+              </button>
+            </form>
+
+            <p className="hint">Use o e-mail que você cadastrou na compra.</p>
           </section>
         </main>
       </div>
