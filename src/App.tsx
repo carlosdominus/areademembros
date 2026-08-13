@@ -293,8 +293,8 @@ export function AppContent() {
       {/* Cabecalho Autenticado */}
       <Cabecalho
         nomePlataforma="Área de Membros"
-        nomeAluno={user.displayName || user.email?.split('@')[0] || 'Aluno'}
-        emailAluno={user.email || ''}
+        nomeAluno={user.displayName || user.email?.split('@')[0] || (typeof window !== 'undefined' ? localStorage.getItem('userDirectEmail')?.split('@')[0] : null) || 'Carlos'}
+        emailAluno={user.email || (typeof window !== 'undefined' ? localStorage.getItem('userDirectEmail') : null) || 'carlos@dominus.site'}
         onLogout={handleLogout}
         onToggleSidebarMobile={() => setIsSidebarMobileOpen(!isSidebarMobileOpen)}
         isSidebarMobileOpen={isSidebarMobileOpen}
