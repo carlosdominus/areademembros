@@ -56,6 +56,9 @@ export async function sendMagicLink(email: string): Promise<void> {
     if (error.code === 'auth/invalid-email') {
       throw new Error('Endereço de e-mail inválido.');
     }
+    if (error.code === 'auth/quota-exceeded') {
+      throw new Error('O limite diário ou temporário de envio de e-mails do Firebase foi atingido (auth/quota-exceeded). Por favor, aguarde alguns minutos ou configure um servidor SMTP/SendGrid no Firebase Console para envios ilimitados.');
+    }
     if (error.code === 'auth/unauthorized-continue-uri' || error.code === 'auth/invalid-continue-uri' || error.code === 'auth/unauthorized-domain') {
       const originHost = typeof window !== 'undefined' ? window.location.hostname : 'seu domínio';
       throw new Error(`O domínio "${originHost}" precisa ser autorizado no Firebase. Acesse Firebase Console > Authentication > Settings > Authorized domains e adicione "${originHost}".`);

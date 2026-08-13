@@ -112,7 +112,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           </h2>
           <p className="text-xs text-[#9CA3AF] mt-1.5 flex items-center justify-center gap-1.5 font-medium">
             <ShieldCheck className="w-4 h-4 text-[#22E025]" />
-            Acesso Restrito por Link Mágico sem Senha
+            Acesso com link pelo email.
           </p>
         </div>
 
