@@ -6,7 +6,7 @@ export const modulosIniciaisMock: Modulo[] = [
     id: 'mod-1',
     ordem: 1,
     titulo: '1. Apresentação',
-    capaUrl: '/capas/m1.webp',
+    capaUrl: 'https://membros.dominus.site/images/m1_converted.webp',
     publicado: true,
     aulas: [
       {
@@ -55,7 +55,7 @@ export const modulosIniciaisMock: Modulo[] = [
     id: 'mod-2',
     ordem: 2,
     titulo: '2. Spy/Espionagem',
-    capaUrl: '/capas/m2.webp',
+    capaUrl: 'https://membros.dominus.site/images/m2_converted.webp',
     publicado: true,
     aulas: [
       {
@@ -104,7 +104,7 @@ export const modulosIniciaisMock: Modulo[] = [
     id: 'mod-3',
     ordem: 3,
     titulo: '3. Copywriting',
-    capaUrl: '/capas/m3.webp',
+    capaUrl: 'https://membros.dominus.site/images/m3_converted.webp',
     publicado: true,
     aulas: [
       {
@@ -153,7 +153,7 @@ export const modulosIniciaisMock: Modulo[] = [
     id: 'mod-4',
     ordem: 4,
     titulo: '4. Edição de vídeo',
-    capaUrl: '/capas/m4.webp',
+    capaUrl: 'https://membros.dominus.site/images/m4_converted.webp',
     publicado: true,
     aulas: [
       {
@@ -202,7 +202,7 @@ export const modulosIniciaisMock: Modulo[] = [
     id: 'mod-5',
     ordem: 5,
     titulo: '5. Estrutura',
-    capaUrl: '/capas/m5.webp',
+    capaUrl: 'https://membros.dominus.site/images/m5_converted.webp',
     publicado: true,
     aulas: [
       {
@@ -247,7 +247,7 @@ export const modulosIniciaisMock: Modulo[] = [
     id: 'mod-6',
     ordem: 6,
     titulo: '6. Tráfego',
-    capaUrl: '/capas/m6.webp',
+    capaUrl: 'https://membros.dominus.site/images/m6_converted.webp',
     publicado: true,
     aulas: [
       {
@@ -296,7 +296,7 @@ export const modulosIniciaisMock: Modulo[] = [
     id: 'mod-7',
     ordem: 7,
     titulo: '7. Gestão',
-    capaUrl: '/capas/m7.webp',
+    capaUrl: 'https://membros.dominus.site/images/m7_converted.webp',
     publicado: true,
     aulas: [
       {

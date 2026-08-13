@@ -63,22 +63,50 @@ async function seed() {
     {
       id: 'mod-1',
       ordem: 1,
-      titulo: 'Módulo 1: Boas-Vindas e Fundamentos da Mentoria',
-      capaUrl: '/capas/m1.webp',
+      titulo: '1. Apresentação',
+      capaUrl: 'https://membros.dominus.site/images/m1_converted.webp',
       publicado: true
     },
     {
       id: 'mod-2',
       ordem: 2,
-      titulo: 'Módulo 2: Estratégia de Alto Valor e Posicionamento',
-      capaUrl: '/capas/m2.webp',
+      titulo: '2. Spy/Espionagem',
+      capaUrl: 'https://membros.dominus.site/images/m2_converted.webp',
       publicado: true
     },
     {
       id: 'mod-3',
       ordem: 3,
-      titulo: 'Módulo 3: Escala e Operação de Alta Performance',
-      capaUrl: '/capas/m3.webp',
+      titulo: '3. Copywriting',
+      capaUrl: 'https://membros.dominus.site/images/m3_converted.webp',
+      publicado: true
+    },
+    {
+      id: 'mod-4',
+      ordem: 4,
+      titulo: '4. Edição de vídeo',
+      capaUrl: 'https://membros.dominus.site/images/m4_converted.webp',
+      publicado: true
+    },
+    {
+      id: 'mod-5',
+      ordem: 5,
+      titulo: '5. Estrutura',
+      capaUrl: 'https://membros.dominus.site/images/m5_converted.webp',
+      publicado: true
+    },
+    {
+      id: 'mod-6',
+      ordem: 6,
+      titulo: '6. Tráfego',
+      capaUrl: 'https://membros.dominus.site/images/m6_converted.webp',
+      publicado: true
+    },
+    {
+      id: 'mod-7',
+      ordem: 7,
+      titulo: '7. Gestão',
+      capaUrl: 'https://membros.dominus.site/images/m7_converted.webp',
       publicado: true
     }
   ];
