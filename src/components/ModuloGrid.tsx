@@ -22,8 +22,8 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
   const updateScrollState = useCallback(() => {
     if (carouselRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
-      const atStart = scrollLeft <= 10;
-      const atEnd = scrollLeft + clientWidth >= scrollWidth - 15;
+      const atStart = scrollLeft <= 8;
+      const atEnd = scrollLeft + clientWidth >= scrollWidth - 12;
 
       setCanScrollLeft(!atStart);
       setCanScrollRight(!atEnd);
@@ -38,24 +38,20 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
           const cardWidth = firstCard.offsetWidth;
           const style = window.getComputedStyle(carouselRef.current);
           const gap = parseInt(style.gap || style.columnGap || '20', 10) || 20;
-          // Calculate whole cards visible in container
           const fitCount = Math.min(
             children.length,
-            Math.max(1, Math.round((clientWidth + gap) / (cardWidth + gap)))
+            Math.max(1, Math.round((clientWidth + gap * 0.5) / (cardWidth + gap)))
           );
           setVisibleEndIndex(fitCount);
         } else {
-          // Dynamic calculation based on rightmost visible card
-          let maxVisibleIndex = 1;
-          const viewRight = scrollLeft + clientWidth;
-          children.forEach((child, index) => {
-            const childLeft = child.offsetLeft;
-            const childWidth = child.offsetWidth;
-            if (childLeft + childWidth * 0.25 <= viewRight && childLeft + childWidth * 0.75 >= scrollLeft) {
-              maxVisibleIndex = index + 1;
-            }
-          });
-          setVisibleEndIndex(Math.min(children.length, Math.max(1, maxVisibleIndex)));
+          const firstCard = children[0];
+          const cardWidth = firstCard.offsetWidth;
+          const style = window.getComputedStyle(carouselRef.current);
+          const gap = parseInt(style.gap || style.columnGap || '20', 10) || 20;
+          const cardsInView = Math.max(1, Math.round((clientWidth + gap * 0.5) / (cardWidth + gap)));
+          const firstIndex = Math.floor((scrollLeft + gap * 0.5) / (cardWidth + gap)) + 1;
+          const targetEnd = Math.min(children.length, firstIndex + cardsInView - 1);
+          setVisibleEndIndex(Math.max(cardsInView, targetEnd));
         }
       }
     }
@@ -191,7 +187,7 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
         {/* Mobile Left Fade Gradient: suaviza o corte do módulo anterior APENAS quando chegar no final (ex: módulo 7) */}
         <div
           aria-hidden="true"
-          className={`sm:hidden absolute left-0 top-0 bottom-0 w-20 z-20 pointer-events-none transition-opacity duration-300 bg-gradient-to-r from-black via-black/85 to-transparent ${
+          className={`sm:hidden absolute -left-4 top-0 bottom-6 w-24 z-20 pointer-events-none transition-opacity duration-300 bg-gradient-to-r from-black via-black/90 to-transparent ${
             isAtEnd ? 'opacity-100' : 'opacity-0'
           }`}
         />
@@ -199,7 +195,7 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
         {/* Mobile Right Fade Gradient: suaviza o corte do módulo seguinte até chegar no último módulo */}
         <div
           aria-hidden="true"
-          className={`sm:hidden absolute right-0 top-0 bottom-0 w-20 z-20 pointer-events-none transition-opacity duration-300 bg-gradient-to-l from-black via-black/85 to-transparent ${
+          className={`sm:hidden absolute -right-4 top-0 bottom-6 w-24 z-20 pointer-events-none transition-opacity duration-300 bg-gradient-to-l from-black via-black/90 to-transparent ${
             !isAtEnd ? 'opacity-100' : 'opacity-0'
           }`}
         />
@@ -222,7 +218,7 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
               <div
                 key={modulo.id}
                 onClick={() => onSelectModulo(modulo.id)}
-                className="card-modulo snap-start shrink-0 w-[80vw] max-w-[300px] sm:w-[calc((100%-1.25rem)/2)] md:w-[calc((100%-2*1.25rem)/3)] lg:w-[calc((100%-3*1.25rem)/4)] group/card relative vidro rounded-[20px] cursor-pointer flex flex-col"
+                className="card-modulo snap-start shrink-0 w-[82vw] sm:w-[calc((100%-1.25rem)/2)] md:w-[calc((100%-2*1.25rem)/3)] lg:w-[calc((100%-3*1.25rem)/4)] group/card relative vidro rounded-[20px] cursor-pointer flex flex-col"
               >
                 {/* Vertical Poster Cover (3:4 aspect ratio) */}
                 <div className="capa bg-[#080D0A]">
