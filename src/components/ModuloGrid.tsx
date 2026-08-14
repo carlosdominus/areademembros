@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { BookOpen, CheckCircle2, Play, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CheckCircle2, Play, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Modulo } from '../types';
 
 interface ModuloGridProps {
@@ -16,14 +16,33 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
   const carouselRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  const [visibleEndIndex, setVisibleEndIndex] = useState<number>(4);
 
   const updateScrollState = useCallback(() => {
     if (carouselRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
-      setCanScrollLeft(scrollLeft > 15);
-      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 15);
+      setCanScrollLeft(scrollLeft > 10);
+      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 10);
+
+      const firstCard = carouselRef.current.firstElementChild as HTMLElement;
+      if (firstCard && modulos.length > 0) {
+        const cardWidth = firstCard.offsetWidth;
+        const style = window.getComputedStyle(carouselRef.current);
+        const gap = parseInt(style.gap || style.columnGap || '20', 10) || 20;
+
+        const isAtEnd = scrollLeft + clientWidth >= scrollWidth - 15;
+        if (isAtEnd) {
+          setVisibleEndIndex(modulos.length);
+        } else {
+          // Number of cards visible in view
+          const cardsInView = Math.max(1, Math.floor((clientWidth + gap * 0.5) / (cardWidth + gap)));
+          const firstVisible = Math.floor((scrollLeft + 10) / (cardWidth + gap)) + 1;
+          const end = Math.min(modulos.length, firstVisible + cardsInView - 1);
+          setVisibleEndIndex(Math.max(cardsInView, end));
+        }
+      }
     }
-  }, []);
+  }, [modulos.length]);
 
   useEffect(() => {
     updateScrollState();
@@ -55,7 +74,10 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
         const cardWidth = firstCard.offsetWidth;
         const style = window.getComputedStyle(carouselRef.current);
         const gap = parseInt(style.gap || style.columnGap || '20', 10) || 20;
-        const scrollAmount = cardWidth + gap;
+        const clientWidth = carouselRef.current.clientWidth;
+        const cardsInView = Math.max(1, Math.floor((clientWidth + gap * 0.5) / (cardWidth + gap)));
+        const scrollAmount = cardsInView > 1 ? (cardWidth + gap) * cardsInView : (cardWidth + gap);
+
         carouselRef.current.scrollBy({
           left: direction === 'left' ? -scrollAmount : scrollAmount,
           behavior: 'smooth'
@@ -63,7 +85,7 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
       } else {
         carouselRef.current.scrollBy({ left: direction === 'left' ? -350 : 350, behavior: 'smooth' });
       }
-      setTimeout(updateScrollState, 400);
+      setTimeout(updateScrollState, 350);
     }
   };
 
@@ -72,8 +94,8 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
       <div className="w-full space-y-6 animate-pulse">
         <div className="h-8 w-64 bg-[rgba(255,255,255,0.05)] rounded-lg" />
         <div className="flex gap-4 overflow-hidden py-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="w-[300px] h-[420px] vidro rounded-[20px] shrink-0" />
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="w-[calc((100%-3*1.25rem)/4)] h-[420px] vidro rounded-[20px] shrink-0" />
           ))}
         </div>
       </div>
@@ -104,32 +126,70 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => scroll('left')}
-              className="w-[38px] h-[38px] rounded-[10px] bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.11)] hover:border-[#41F20A]/50 text-[#EDF4EB] hover:text-[#41F20A] flex items-center justify-center transition-all cursor-pointer active:scale-95 shadow-sm"
-              title="Anterior"
-              aria-label="Módulos anteriores"
+          <div className="flex items-center gap-2.5">
+            {/* Marcador de Módulos (ex: 4 / 7) */}
+            <div
+              className="px-3 py-1.5 rounded-[10px] bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.1)] text-[#D9E4D6] font-['Inter_Tight',sans-serif] text-[13px] font-semibold flex items-center gap-1 shadow-sm select-none"
+              title={`Exibindo até o módulo ${visibleEndIndex} de ${modulos.length}`}
             >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => scroll('right')}
-              className="w-[38px] h-[38px] rounded-[10px] bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.11)] hover:border-[#41F20A]/50 text-[#EDF4EB] hover:text-[#41F20A] flex items-center justify-center transition-all cursor-pointer active:scale-95 shadow-sm"
-              title="Próximo"
-              aria-label="Próximos módulos"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
+              <span className="text-[#41F20A] font-bold">{visibleEndIndex}</span>
+              <span className="text-[#A7B7A4]">/</span>
+              <span className="text-[#EDF4EB]">{modulos.length}</span>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => scroll('left')}
+                disabled={!canScrollLeft}
+                className={`w-[38px] h-[38px] rounded-[10px] bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.11)] flex items-center justify-center transition-all cursor-pointer active:scale-95 shadow-sm ${
+                  !canScrollLeft
+                    ? 'opacity-30 cursor-not-allowed text-[#A7B7A4]'
+                    : 'hover:border-[#41F20A]/50 text-[#EDF4EB] hover:text-[#41F20A]'
+                }`}
+                title="Anterior"
+                aria-label="Módulos anteriores"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => scroll('right')}
+                disabled={!canScrollRight}
+                className={`w-[38px] h-[38px] rounded-[10px] bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.11)] flex items-center justify-center transition-all cursor-pointer active:scale-95 shadow-sm ${
+                  !canScrollRight
+                    ? 'opacity-30 cursor-not-allowed text-[#A7B7A4]'
+                    : 'hover:border-[#41F20A]/50 text-[#EDF4EB] hover:text-[#41F20A]'
+                }`}
+                title="Próximo"
+                aria-label="Próximos módulos"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Vertical Image Carousel Slider (Without harsh mask, with generous padding for smooth shadow dissipation) */}
-      <div className="relative group -mx-2 sm:-mx-4 px-2 sm:px-4">
+      {/* Vertical Image Carousel Slider with Mobile Degrade Fade on cut edges */}
+      <div className="relative group">
+        {/* Mobile Left Fade Gradient: suaviza o corte do módulo à esquerda quando o usuário avança */}
+        <div
+          aria-hidden="true"
+          className={`sm:hidden absolute left-0 top-0 bottom-12 w-16 z-20 pointer-events-none transition-opacity duration-300 bg-gradient-to-r from-black via-black/85 to-transparent ${
+            canScrollLeft ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
+
+        {/* Mobile Right Fade Gradient: suaviza o corte do módulo à direita quando há mais módulos adiante */}
+        <div
+          aria-hidden="true"
+          className={`sm:hidden absolute right-0 top-0 bottom-12 w-16 z-20 pointer-events-none transition-opacity duration-300 bg-gradient-to-l from-black via-black/85 to-transparent ${
+            canScrollRight ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
+
         <div
           ref={carouselRef}
-          className="flex gap-4 sm:gap-6 overflow-x-auto scrollbar-none pt-4 pb-12 px-2 sm:px-4 snap-x snap-mandatory scroll-smooth"
+          className="flex gap-4 sm:gap-5 overflow-x-auto scrollbar-none pt-4 pb-12 snap-x snap-mandatory scroll-smooth"
           style={{
             scrollbarWidth: 'none',
             msOverflowStyle: 'none'
@@ -145,7 +205,7 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
               <div
                 key={modulo.id}
                 onClick={() => onSelectModulo(modulo.id)}
-                className="card-modulo snap-start shrink-0 w-[270px] sm:w-[305px] md:w-[325px] lg:w-[340px] xl:w-[350px] group/card relative vidro rounded-[20px] cursor-pointer flex flex-col"
+                className="card-modulo snap-start shrink-0 w-[270px] sm:w-[calc((100%-1.25rem)/2)] md:w-[calc((100%-2*1.25rem)/3)] lg:w-[calc((100%-3*1.25rem)/4)] group/card relative vidro rounded-[20px] cursor-pointer flex flex-col"
               >
                 {/* Vertical Poster Cover (3:4 aspect ratio) */}
                 <div className="capa bg-[#080D0A]">
