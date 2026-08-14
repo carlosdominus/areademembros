@@ -82,7 +82,7 @@ export const SidebarCurso: React.FC<SidebarCursoProps> = ({
           <button
             type="button"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="w-full vidro rounded-[12px] px-3.5 py-2.5 flex items-center justify-between gap-2 text-[#EDF4EB] font-['Inter_Tight',sans-serif] font-medium text-[13.5px] cursor-pointer hover:border-[#41F20A]/50 transition-all group"
+            className="w-full btn-vidro h-[44px] px-3.5 flex items-center justify-between gap-2 text-[#EDF4EB] font-['Inter_Tight',sans-serif] font-medium text-[13.5px] cursor-pointer hover:border-[#41F20A]/50 transition-all group"
           >
             <span className="truncate group-hover:text-[#41F20A] transition-colors">
               {moduloAtual.titulo} ({moduloAtual.aulas.length} aulas)
@@ -144,7 +144,7 @@ export const SidebarCurso: React.FC<SidebarCursoProps> = ({
               onGoHome();
               if (onCloseMobile) onCloseMobile();
             }}
-            className="w-full mt-3 btn-fantasma h-[42px] font-['Inter_Tight',sans-serif] text-[13.5px] text-[#41F20A] flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full mt-3 btn-vidro h-[44px] text-[#41F20A] font-['Inter_Tight',sans-serif] text-[13.5px] flex items-center justify-center gap-2 cursor-pointer"
           >
             <span>Ver Todos os Módulos</span>
           </button>

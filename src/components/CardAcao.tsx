@@ -22,22 +22,30 @@ export const CardAcao: React.FC<CardAcaoProps> = ({
   return (
     <div className="flex flex-col items-start sm:items-end gap-3 shrink-0">
       {/* Botão "Aula Concluída" */}
-      <button
-        onClick={onToggleConcluida}
-        disabled={loading}
-        className={`h-[44px] px-5 rounded-full font-['Inter_Tight',sans-serif] font-semibold text-[13.5px] flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-50 ${
-          concluida 
-            ? 'btn h-[44px] px-5 text-[#062800]' 
-            : 'btn-fantasma h-[44px] px-5 text-[#EDF4EB]'
-        }`}
-      >
-        {loading ? (
-          <RefreshCw className="w-4 h-4 animate-spin text-[#41F20A]" />
-        ) : (
-          <Check className={`w-4 h-4 stroke-[2.5] ${concluida ? 'text-[#062800]' : 'text-[#41F20A]'}`} />
-        )}
-        <span>{concluida ? 'Aula Concluída' : 'Marcar como Concluída'}</span>
-      </button>
+      {concluida ? (
+        <button
+          type="button"
+          disabled={true}
+          className="btn-vidro h-[44px] px-5 rounded-[12px] font-['Inter_Tight',sans-serif] font-semibold text-[13.5px] flex items-center justify-center gap-2 cursor-default opacity-95 select-none"
+        >
+          <Check className="w-4 h-4 stroke-[2.5] text-[#41F20A]" />
+          <span>Aula concluída</span>
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={onToggleConcluida}
+          disabled={loading}
+          className="btn h-[44px] px-5 rounded-[12px] font-['Inter_Tight',sans-serif] font-semibold text-[13.5px] flex items-center justify-center gap-2 text-[#062800] cursor-pointer transition-all disabled:opacity-60"
+        >
+          {loading ? (
+            <RefreshCw className="w-4 h-4 animate-spin text-[#062800]" />
+          ) : (
+            <Check className="w-4 h-4 stroke-[2.5] text-[#062800]" />
+          )}
+          <span>{loading ? 'Salvando...' : 'Marcar como Concluída'}</span>
+        </button>
+      )}
 
       {/* Avaliação por estrelas */}
       <div className="flex flex-col items-start sm:items-end gap-1 font-['Inter_Tight',sans-serif]">
@@ -74,3 +82,4 @@ export const CardAcao: React.FC<CardAcaoProps> = ({
     </div>
   );
 };
+

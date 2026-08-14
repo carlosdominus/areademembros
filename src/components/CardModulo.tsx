@@ -67,7 +67,7 @@ export const CardModulo: React.FC<CardModuloProps> = ({
 
       {/* Módulo expandido: sub-lista indentada das aulas */}
       {isOpen && (
-        <div className="px-3 pb-3 pt-1 border-t border-[rgba(255,255,255,0.08)] bg-[rgba(0,0,0,0.25)]">
+        <div className="lista-aulas px-2 pb-2.5 pt-1 border-t border-[rgba(255,255,255,0.08)] bg-[rgba(0,0,0,0.30)]">
           {modulo.aulas.map((aula, index) => {
             const proximaAula = modulo.aulas[index + 1];
             return (

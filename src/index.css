@@ -17,8 +17,8 @@
   --vidro:  rgba(255,255,255,.055);
   --risco:  rgba(255,255,255,.11);
 
-  --r-card:  26px;
-  --r-campo: 14px;
+  --r-card:  20px;
+  --r-campo: 12px;
 }
 
 body {
@@ -89,11 +89,11 @@ body {
   pointer-events: none;
 }
 
-/* Header em Vidro (fixo no topo, sem border-radius, apenas borda inferior) */
+/* Header em Vidro (fixo no topo, z-index 50) */
 .vidro-header {
   position: sticky;
   top: 0;
-  z-index: 40;
+  z-index: 50;
   border-radius: 0;
   background: linear-gradient(157deg,
     rgba(255,255,255,.10), rgba(255,255,255,.028) 44%, rgba(255,255,255,.07));
@@ -102,16 +102,73 @@ body {
   box-shadow: 0 1px 0 rgba(255,255,255,.07);
 }
 
+/* Monograma da Marca */
+.marca {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #7BFA45 0%, #41F20A 46%, #2BB102 64%, #1A8300 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 6px 16px -8px rgba(65,242,10,.6);
+  font: 700 15px 'Inter Tight', sans-serif;
+  color: #062800;
+  letter-spacing: -.02em;
+}
+
+/* Capa de Módulo */
+.capa {
+  position: relative;
+  aspect-ratio: 3/4;
+  overflow: hidden;
+  border-radius: 20px 20px 0 0;
+}
+.capa img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.capa .titulo {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 22px;
+  z-index: 1;
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-weight: 600;
+  font-size: clamp(26px, 2.2vw, 34px);
+  line-height: 1.02;
+  letter-spacing: -.03em;
+  color: #EDF4EB;
+  padding-bottom: .14em;
+  overflow-wrap: break-word;
+}
+
+/* Card do Módulo */
+.card-modulo {
+  transition: transform .2s cubic-bezier(.2,.7,.25,1), box-shadow .2s;
+}
+.card-modulo:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 50px -20px rgba(0,0,0,.9);
+}
+.card-modulo:hover .capa img {
+  transform: none;
+}
+
 /* Botão Principal (.btn) */
 .btn {
   position: relative;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 52px;
+  height: 44px;
+  padding: 0 20px;
   border: none;
-  border-radius: 999px;
-  font: 600 15.5px/1 'Inter Tight', sans-serif;
+  border-radius: 12px;
+  font: 600 14.5px/1 'Inter Tight', sans-serif;
   letter-spacing: -.005em;
   color: #062800;
   background: linear-gradient(180deg, #7BFA45 0%, #41F20A 46%, #2BB102 64%, #1A8300 100%);
@@ -151,24 +208,75 @@ body {
     0 5px 14px -8px rgba(65,242,10,.45);
 }
 
-/* Botão Secundário / Fantasma (.btn-fantasma) */
+/* Botão Vidro Secundário (.btn-vidro / .btn-fantasma) */
+.btn-vidro,
 .btn-fantasma {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 50px;
-  border-radius: 999px;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
   border: 1px solid rgba(255,255,255,.13);
   background: linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.03));
   box-shadow: inset 0 1px 0 rgba(255,255,255,.26), 0 6px 18px -10px rgba(0,0,0,.9);
   color: #E4F7DC;
-  font: 600 14.5px 'Inter Tight', sans-serif;
+  font: 600 14px 'Inter Tight', sans-serif;
   cursor: pointer;
-  transition: transform .14s cubic-bezier(.2,.7,.25,1), background .18s;
+  transition: background .18s, transform .14s;
 }
 
+.btn-vidro:hover,
 .btn-fantasma:hover {
-  background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.06));
+  background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.05));
+}
+
+.btn-vidro:active,
+.btn-fantasma:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 2px 6px rgba(0,0,0,.5);
+}
+
+/* Lista de Aulas da Sidebar */
+.lista-aulas {
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+.aula {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  margin: 2px 8px;
+  padding: 0 10px;
+  border-radius: 10px;
+  color: #D9E4D6;
+  font: 500 13.5px 'Inter Tight', sans-serif;
+  transition: background .16s;
+}
+
+.aula:hover {
+  background: rgba(255,255,255,.05);
+}
+
+.aula.ativa {
+  background: rgba(65,242,10,.10);
+  border: 1px solid rgba(65,242,10,.28);
+  color: #EDF4EB;
+}
+
+/* Perfil Ancorado */
+.perfil {
+  position: relative;
+}
+
+.perfil-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  bottom: auto; /* nunca bottom:100% */
+  z-index: 60;
 }
 
 /* Texto em degradê verde (.destaque) */

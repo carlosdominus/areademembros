@@ -23,21 +23,20 @@ export const BarraContexto: React.FC<BarraContextoProps> = ({
 }) => {
   return (
     <div className="w-full flex items-center justify-between gap-3 mb-5 flex-wrap sm:flex-nowrap">
-      {/* Esquerda: Botão "Voltar" + Ícone Livro + Breadcrumb */}
+      {/* Esquerda: Botão "Módulos" + Breadcrumb (sem ícone de livro) */}
       <div className="flex items-center gap-3 min-w-0 flex-1">
         {/* Botão Voltar */}
         <button
           onClick={onVoltar}
-          className="btn-fantasma h-[38px] px-4 text-[#41F20A] font-['Inter_Tight',sans-serif] font-semibold text-[13px] flex items-center gap-2 transition-all cursor-pointer shrink-0"
+          className="btn-vidro h-[40px] px-4 text-[#41F20A] font-['Inter_Tight',sans-serif] font-semibold text-[13px] flex items-center gap-2 transition-all cursor-pointer shrink-0"
           title="Voltar para os Módulos"
         >
           <ArrowLeft className="w-4 h-4 text-[#41F20A]" />
           <span>Módulos</span>
         </button>
 
-        {/* Ícone Livro + Breadcrumb */}
+        {/* Breadcrumb puro (sem ícone) */}
         <div className="flex items-center gap-2 text-[13.5px] font-['Inter_Tight',sans-serif] min-w-0 truncate">
-          <BookOpen className="w-4 h-4 text-[#41F20A] shrink-0" />
           <span className="text-[#EDF4EB] font-semibold truncate">
             {moduloAtual.titulo}
           </span>
@@ -53,7 +52,7 @@ export const BarraContexto: React.FC<BarraContextoProps> = ({
         <button
           onClick={onAnterior}
           disabled={!temAnterior}
-          className={`btn-fantasma h-[38px] px-3.5 text-[13px] font-['Inter_Tight',sans-serif] font-medium flex items-center gap-1.5 transition-all ${
+          className={`btn-vidro h-[40px] px-3.5 text-[13px] font-['Inter_Tight',sans-serif] font-medium flex items-center gap-1.5 transition-all ${
             !temAnterior 
               ? 'opacity-40 cursor-not-allowed' 
               : 'hover:text-[#41F20A] cursor-pointer'
@@ -67,7 +66,7 @@ export const BarraContexto: React.FC<BarraContextoProps> = ({
         <button
           onClick={onProxima}
           disabled={!temProxima}
-          className={`btn-fantasma h-[38px] px-3.5 text-[13px] font-['Inter_Tight',sans-serif] font-medium flex items-center gap-1.5 transition-all ${
+          className={`btn-vidro h-[40px] px-3.5 text-[13px] font-['Inter_Tight',sans-serif] font-medium flex items-center gap-1.5 transition-all ${
             !temProxima 
               ? 'opacity-40 cursor-not-allowed' 
               : 'hover:text-[#41F20A] cursor-pointer'

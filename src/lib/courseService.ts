@@ -168,20 +168,16 @@ export async function updateLessonProgress(
   concluida: boolean,
   avaliacao?: number | null
 ): Promise<void> {
-  try {
-    const docRef = doc(db, 'progresso', uid, 'aulas', aulaId);
-    const dataToUpdate: Record<string, any> = {
-      concluida,
-      atualizadoEm: serverTimestamp()
-    };
-    if (avaliacao !== undefined) {
-      dataToUpdate.avaliacao = avaliacao;
-    }
-
-    await setDoc(docRef, dataToUpdate, { merge: true });
-  } catch (err) {
-    console.warn('Erro ao atualizar progresso da aula no Firestore:', err);
+  const docRef = doc(db, 'progresso', uid, 'aulas', aulaId);
+  const dataToUpdate: Record<string, any> = {
+    concluida,
+    atualizadoEm: serverTimestamp()
+  };
+  if (avaliacao !== undefined) {
+    dataToUpdate.avaliacao = avaliacao;
   }
+
+  await setDoc(docRef, dataToUpdate, { merge: true });
 }
 
 /**

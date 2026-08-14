@@ -151,14 +151,15 @@ export function AppContent() {
     }
   };
 
-  // Alteração com escrita otimista e rollback em caso de falha
+  // Alteração com escrita otimista, timeout de 10s e rollback com finally
   const handleToggleConcluida = async () => {
     if (!user || !aulaAtual) return;
+    if (aulaAtual.concluida) return; // Não dispara se já concluída
 
     const estadoAnterior = aulaAtual.concluida;
-    const novoEstado = !estadoAnterior;
+    const novoEstado = true;
 
-    // 1. Atualização Otimista no estado React
+    // 1. Atualização Otimista no estado React (e recálculo de progresso)
     setModulos((prevModulos) =>
       prevModulos.map((mod) => {
         if (mod.id !== moduloAtual?.id) return mod;
@@ -172,10 +173,13 @@ export function AppContent() {
       })
     );
 
-    // 2. Persiste no Firestore
+    // 2. Persiste no Firestore com Promise.race de 10 segundos
     setActionLoading(true);
     try {
-      await updateLessonProgress(user.uid, aulaAtual.id, novoEstado, aulaAtual.avaliacao);
+      await Promise.race([
+        updateLessonProgress(user.uid, aulaAtual.id, novoEstado, aulaAtual.avaliacao),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 10000))
+      ]);
     } catch (err) {
       console.error('Falha ao salvar progresso no banco. Revertendo...', err);
       // Rollback
@@ -192,7 +196,7 @@ export function AppContent() {
         })
       );
     } finally {
-      setActionLoading(false);
+      setActionLoading(false); // isto TEM que existir
     }
   };
 
@@ -379,7 +383,7 @@ export function AppContent() {
                           href={aulaAtual.materialAnexo.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.11)] text-[13px] font-medium text-[#EDF4EB] hover:border-[#41F20A]/50 hover:text-[#41F20A] transition-all duration-150 cursor-pointer shadow-sm group"
+                          className="btn-vidro h-[44px] px-4 rounded-[12px] text-[13px] font-medium text-[#EDF4EB] inline-flex items-center gap-2.5 cursor-pointer shadow-sm group"
                         >
                           <div className="w-7 h-7 rounded-[8px] bg-[rgba(65,242,10,0.08)] border border-[rgba(65,242,10,0.22)] flex items-center justify-center text-[#41F20A]">
                             <FileText className="w-3.5 h-3.5" />
