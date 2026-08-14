@@ -189,7 +189,7 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
         {/* Mobile Left Fade Gradient: suaviza o corte do módulo anterior APENAS quando chegar no final (ex: módulo 7) */}
         <div
           aria-hidden="true"
-          className={`sm:hidden absolute -left-4 top-0 bottom-6 w-24 z-20 pointer-events-none transition-opacity duration-300 bg-gradient-to-r from-black via-black/90 to-transparent ${
+          className={`sm:hidden absolute -left-4 -top-6 -bottom-6 w-[40vw] max-w-[160px] z-20 pointer-events-none transition-opacity duration-300 bg-gradient-to-r from-black via-black/85 to-transparent ${
             isAtEnd ? 'opacity-100' : 'opacity-0'
           }`}
         />
@@ -197,14 +197,14 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
         {/* Mobile Right Fade Gradient: suaviza o corte do módulo seguinte até chegar no último módulo */}
         <div
           aria-hidden="true"
-          className={`sm:hidden absolute -right-4 top-0 bottom-6 w-24 z-20 pointer-events-none transition-opacity duration-300 bg-gradient-to-l from-black via-black/90 to-transparent ${
+          className={`sm:hidden absolute -right-4 -top-6 -bottom-6 w-[40vw] max-w-[160px] z-20 pointer-events-none transition-opacity duration-300 bg-gradient-to-l from-black via-black/85 to-transparent ${
             !isAtEnd ? 'opacity-100' : 'opacity-0'
           }`}
         />
 
         <div
           ref={carouselRef}
-          className="flex gap-4 sm:gap-5 overflow-x-auto scrollbar-none pt-4 pb-12 snap-x snap-mandatory scroll-smooth"
+          className="flex gap-4 sm:gap-5 overflow-x-auto scrollbar-none pt-3 pb-8 snap-x snap-mandatory scroll-smooth"
           style={{
             scrollbarWidth: 'none',
             msOverflowStyle: 'none'
