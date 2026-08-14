@@ -117,19 +117,13 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
 
   return (
     <div className="w-full space-y-6 animate-in fade-in duration-300">
-      {/* Top Header: Title + Overall Progress + Navigation Arrows */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-[rgba(255,255,255,0.08)]">
-        <div>
-          <h1 className="font-display text-[24px] sm:text-[28px] text-[#EDF4EB]">
+      {/* Top Header: Title + Overall Progress + Navigation Controls */}
+      <div className="pb-3 border-b border-[rgba(255,255,255,0.08)] space-y-2">
+        {/* Linha 1: Título e Progresso Geral (Desktop) */}
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="font-display text-[22px] sm:text-[28px] text-[#EDF4EB]">
             Módulos do Curso
           </h1>
-          <p className="font-['Inter_Tight',sans-serif] font-normal text-[13.5px] text-[#A7B7A4] mt-1">
-            Deslize para ver todos os módulos e selecionar o conteúdo
-          </p>
-        </div>
-
-        {/* Carousel Controls & Progress */}
-        <div className="flex items-center gap-4 self-end sm:self-auto">
           <div className="text-right hidden md:block font-['Inter_Tight',sans-serif]">
             <span className="text-[12.5px] font-semibold text-[#D9E4D6] block">
               Progresso Geral: <strong className="text-[#41F20A] font-bold">{progressoGeral}%</strong>
@@ -138,11 +132,19 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
               {aulasConcluidas} de {totalAulas} aulas concluídas
             </span>
           </div>
+        </div>
 
-          <div className="flex items-center gap-2.5">
+        {/* Linha 2: Subtítulo em 2 linhas no mobile + Controles alinhados ao lado */}
+        <div className="flex items-center justify-between gap-3 pt-0.5">
+          <p className="font-['Inter_Tight',sans-serif] font-normal text-[13px] sm:text-[13.5px] text-[#A7B7A4] leading-snug">
+            <span className="block sm:inline">Deslize para ver todos os módulos</span>{' '}
+            <span className="block sm:inline">e selecionar o conteúdo</span>
+          </p>
+
+          <div className="flex items-center gap-2 shrink-0">
             {/* Marcador de Módulos (ex: 4 / 7) */}
             <div
-              className="px-3 py-1.5 rounded-[10px] bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.1)] text-[#D9E4D6] font-['Inter_Tight',sans-serif] text-[13px] font-semibold flex items-center gap-1 shadow-sm select-none"
+              className="px-2.5 sm:px-3 py-1.5 rounded-[10px] bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.1)] text-[#D9E4D6] font-['Inter_Tight',sans-serif] text-[12px] sm:text-[13px] font-semibold flex items-center gap-1 shadow-sm select-none"
               title={`Exibindo até o módulo ${visibleEndIndex} de ${modulos.length}`}
             >
               <span className="text-[#41F20A] font-bold">{visibleEndIndex}</span>
@@ -154,7 +156,7 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
               <button
                 onClick={() => scroll('left')}
                 disabled={!canScrollLeft}
-                className={`w-[38px] h-[38px] rounded-[10px] bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.11)] flex items-center justify-center transition-all cursor-pointer active:scale-95 shadow-sm ${
+                className={`w-[34px] h-[34px] sm:w-[38px] sm:h-[38px] rounded-[10px] bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.11)] flex items-center justify-center transition-all cursor-pointer active:scale-95 shadow-sm ${
                   !canScrollLeft
                     ? 'opacity-30 cursor-not-allowed text-[#A7B7A4]'
                     : 'hover:border-[#41F20A]/50 text-[#EDF4EB] hover:text-[#41F20A]'
@@ -162,12 +164,12 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
                 title="Anterior"
                 aria-label="Módulos anteriores"
               >
-                <ChevronLeft className="w-5 h-5" />
+                <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
               <button
                 onClick={() => scroll('right')}
                 disabled={!canScrollRight}
-                className={`w-[38px] h-[38px] rounded-[10px] bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.11)] flex items-center justify-center transition-all cursor-pointer active:scale-95 shadow-sm ${
+                className={`w-[34px] h-[34px] sm:w-[38px] sm:h-[38px] rounded-[10px] bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.11)] flex items-center justify-center transition-all cursor-pointer active:scale-95 shadow-sm ${
                   !canScrollRight
                     ? 'opacity-30 cursor-not-allowed text-[#A7B7A4]'
                     : 'hover:border-[#41F20A]/50 text-[#EDF4EB] hover:text-[#41F20A]'
@@ -175,7 +177,7 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
                 title="Próximo"
                 aria-label="Próximos módulos"
               >
-                <ChevronRight className="w-5 h-5" />
+                <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
           </div>
@@ -218,7 +220,7 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
               <div
                 key={modulo.id}
                 onClick={() => onSelectModulo(modulo.id)}
-                className="card-modulo snap-start shrink-0 w-[82vw] sm:w-[calc((100%-1.25rem)/2)] md:w-[calc((100%-2*1.25rem)/3)] lg:w-[calc((100%-3*1.25rem)/4)] group/card relative vidro rounded-[20px] cursor-pointer flex flex-col"
+                className="card-modulo snap-start shrink-0 w-[58vw] max-w-[240px] sm:max-w-none sm:w-[calc((100%-1.25rem)/2)] md:w-[calc((100%-2*1.25rem)/3)] lg:w-[calc((100%-3*1.25rem)/4)] group/card relative vidro rounded-[20px] cursor-pointer flex flex-col"
               >
                 {/* Vertical Poster Cover (3:4 aspect ratio) */}
                 <div className="capa bg-[#080D0A]">
