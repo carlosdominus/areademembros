@@ -266,15 +266,20 @@ export function AppContent() {
   // Render Tela de Carregamento Inicial
   if (authLoading) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center p-4 relative overflow-hidden bg-black">
+      <div className="min-h-screen w-full flex items-center justify-center p-4 relative overflow-hidden text-[#EDF4EB] font-body">
         <div className="grao" />
-        <div className="relative z-10 w-full max-w-sm vidro p-8 text-center space-y-4">
-          <div className="w-12 h-12 rounded-2xl bg-[rgba(65,242,10,0.08)] border border-[rgba(65,242,10,0.22)] text-[#41F20A] flex items-center justify-center mx-auto animate-spin">
-            <RefreshCw className="w-6 h-6" />
+        <div className="relative z-10 w-full max-w-sm vidro rounded-[20px] p-8 text-center space-y-4 shadow-2xl border border-[rgba(255,255,255,0.1)]">
+          <div className="w-14 h-14 rounded-2xl bg-[rgba(65,242,10,0.08)] border border-[rgba(65,242,10,0.22)] flex items-center justify-center mx-auto shadow-inner">
+            <RefreshCw className="w-6 h-6 text-[#41F20A] animate-spin" />
           </div>
-          <p className="text-xs font-semibold text-[#41F20A] tracking-wider uppercase">
-            Acessando Área de Membros...
-          </p>
+          <div>
+            <p className="text-[13px] font-semibold text-[#41F20A] tracking-wider uppercase">
+              Acessando Área de Membros...
+            </p>
+            <p className="text-[12px] text-[#A7B7A4] mt-1">
+              Carregando seu ambiente de estudos
+            </p>
+          </div>
         </div>
       </div>
     );
