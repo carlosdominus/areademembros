@@ -79,25 +79,53 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
   const progressoGeral = totalAulas > 0 ? Math.round((aulasConcluidas / totalAulas) * 100) : 0;
 
   const scroll = (direction: 'left' | 'right') => {
-    if (carouselRef.current) {
-      const firstCard = carouselRef.current.firstElementChild as HTMLElement;
-      if (firstCard) {
-        const cardWidth = firstCard.offsetWidth;
-        const style = window.getComputedStyle(carouselRef.current);
-        const gap = parseInt(style.gap || style.columnGap || '20', 10) || 20;
-        const clientWidth = carouselRef.current.clientWidth;
-        const cardsInView = Math.max(1, Math.floor((clientWidth + gap * 0.5) / (cardWidth + gap)));
-        const scrollAmount = cardsInView > 1 ? (cardWidth + gap) * cardsInView : (cardWidth + gap);
+    if (!carouselRef.current) return;
+    const container = carouselRef.current;
+    const children = Array.from(container.children) as HTMLElement[];
+    if (children.length === 0) return;
 
-        carouselRef.current.scrollBy({
-          left: direction === 'left' ? -scrollAmount : scrollAmount,
-          behavior: 'smooth'
-        });
+    const scrollLeft = container.scrollLeft;
+    const clientWidth = container.clientWidth;
+    const firstCard = children[0];
+    const cardWidth = firstCard.offsetWidth;
+    const style = window.getComputedStyle(container);
+    const gap = parseInt(style.gap || style.columnGap || '20', 10) || 20;
+
+    // Determine how many whole cards are visible at once
+    const fullCardsInView = Math.max(1, Math.floor((clientWidth + gap * 0.5) / (cardWidth + gap)));
+
+    if (fullCardsInView > 1) {
+      // Desktop / Tablet multi-card step
+      const currentIndex = Math.max(0, Math.round(scrollLeft / (cardWidth + gap)));
+      const targetIndex =
+        direction === 'left'
+          ? Math.max(0, currentIndex - fullCardsInView)
+          : Math.min(children.length - fullCardsInView, currentIndex + fullCardsInView);
+
+      const targetOffset = children[targetIndex]?.offsetLeft ?? 0;
+      container.scrollTo({ left: targetOffset, behavior: 'smooth' });
+    } else {
+      // Mobile 1-by-1 card navigation
+      if (direction === 'left') {
+        const prevCard = [...children]
+          .reverse()
+          .find((child) => child.offsetLeft < scrollLeft - 10);
+        if (prevCard) {
+          container.scrollTo({ left: prevCard.offsetLeft, behavior: 'smooth' });
+        } else {
+          container.scrollTo({ left: 0, behavior: 'smooth' });
+        }
       } else {
-        carouselRef.current.scrollBy({ left: direction === 'left' ? -350 : 350, behavior: 'smooth' });
+        const nextCard = children.find((child) => child.offsetLeft > scrollLeft + 10);
+        if (nextCard) {
+          container.scrollTo({ left: nextCard.offsetLeft, behavior: 'smooth' });
+        } else {
+          container.scrollTo({ left: container.scrollWidth, behavior: 'smooth' });
+        }
       }
-      setTimeout(updateScrollState, 350);
     }
+
+    setTimeout(updateScrollState, 350);
   };
 
   if (loading) {
