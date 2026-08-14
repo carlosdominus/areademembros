@@ -17,7 +17,9 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const [isAtEnd, setIsAtEnd] = useState(false);
-  const [visibleEndIndex, setVisibleEndIndex] = useState<number>(4);
+  const [visibleEndIndex, setVisibleEndIndex] = useState<number>(() =>
+    typeof window !== 'undefined' && window.innerWidth < 640 ? 1 : 4
+  );
 
   const updateScrollState = useCallback(() => {
     if (carouselRef.current) {
@@ -33,25 +35,21 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
       if (children.length > 0) {
         if (atEnd) {
           setVisibleEndIndex(children.length);
-        } else if (atStart) {
-          const firstCard = children[0];
-          const cardWidth = firstCard.offsetWidth;
-          const style = window.getComputedStyle(carouselRef.current);
-          const gap = parseInt(style.gap || style.columnGap || '20', 10) || 20;
-          const fitCount = Math.min(
-            children.length,
-            Math.max(1, Math.round((clientWidth + gap * 0.5) / (cardWidth + gap)))
-          );
-          setVisibleEndIndex(fitCount);
         } else {
           const firstCard = children[0];
           const cardWidth = firstCard.offsetWidth;
           const style = window.getComputedStyle(carouselRef.current);
           const gap = parseInt(style.gap || style.columnGap || '20', 10) || 20;
-          const cardsInView = Math.max(1, Math.round((clientWidth + gap * 0.5) / (cardWidth + gap)));
-          const firstIndex = Math.floor((scrollLeft + gap * 0.5) / (cardWidth + gap)) + 1;
-          const targetEnd = Math.min(children.length, firstIndex + cardsInView - 1);
-          setVisibleEndIndex(Math.max(cardsInView, targetEnd));
+
+          // Number of whole cards fitting in visible container
+          // Mobile (1.5 cards layout) = 1 full card; Tablet = 2; Desktop = 4
+          const fullCardsInView = Math.max(1, Math.floor((clientWidth + gap * 1.15) / (cardWidth + gap)));
+
+          // Scrolled cards offset
+          const scrolledCards = Math.max(0, Math.floor((scrollLeft + (cardWidth + gap) * 0.35) / (cardWidth + gap)));
+
+          const currentEnd = Math.min(children.length, fullCardsInView + scrolledCards);
+          setVisibleEndIndex(Math.max(fullCardsInView, currentEnd));
         }
       }
     }
