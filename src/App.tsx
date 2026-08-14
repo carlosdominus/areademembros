@@ -306,7 +306,7 @@ export function AppContent() {
       />
 
       {/* Corpo principal */}
-      <main className="w-full max-w-[1360px] mx-auto px-4 sm:px-8 lg:px-10 py-6 flex-1 relative z-10">
+      <main className="w-full max-w-[1560px] mx-auto px-4 sm:px-8 lg:px-12 py-6 flex-1 relative z-10">
         {viewMode === 'home' ? (
           <ModuloGrid
             modulos={modulos}

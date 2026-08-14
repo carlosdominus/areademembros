@@ -67,25 +67,13 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
     }
   };
 
-  const getMaskStyle = () => {
-    if (canScrollRight) {
-      return 'linear-gradient(to right, #000 0%, #000 calc(100% - 130px), transparent 100%)';
-    }
-    if (canScrollLeft) {
-      return 'linear-gradient(to right, transparent 0px, #000 130px, #000 100%)';
-    }
-    return 'none';
-  };
-
-  const currentMask = getMaskStyle();
-
   if (loading) {
     return (
       <div className="w-full space-y-6 animate-pulse">
         <div className="h-8 w-64 bg-[rgba(255,255,255,0.05)] rounded-lg" />
         <div className="flex gap-4 overflow-hidden py-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="w-[300px] h-[420px] vidro rounded-[26px] shrink-0" />
+            <div key={i} className="w-[300px] h-[420px] vidro rounded-[20px] shrink-0" />
           ))}
         </div>
       </div>
@@ -137,16 +125,14 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
         </div>
       </div>
 
-      {/* Vertical Image Carousel Slider */}
-      <div className="relative group">
+      {/* Vertical Image Carousel Slider (Without harsh mask, with generous padding for smooth shadow dissipation) */}
+      <div className="relative group -mx-2 sm:-mx-4 px-2 sm:px-4">
         <div
           ref={carouselRef}
-          className="flex gap-4 sm:gap-5 overflow-x-auto scrollbar-none py-6 px-1 snap-x snap-mandatory scroll-smooth transition-[mask-image]"
+          className="flex gap-4 sm:gap-6 overflow-x-auto scrollbar-none pt-4 pb-12 px-2 sm:px-4 snap-x snap-mandatory scroll-smooth"
           style={{
             scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-            WebkitMaskImage: currentMask,
-            maskImage: currentMask
+            msOverflowStyle: 'none'
           }}
         >
           {modulos.map((modulo) => {
