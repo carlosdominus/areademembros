@@ -29,9 +29,9 @@ body {
   min-height: 100vh;
   position: relative;
   background:
-    radial-gradient(46vw 80vw at 12% 62%, rgba(12,108,147,.16), transparent 62%),
-    radial-gradient(34vw 85vw at 84% 40%, rgba(12,74,20,.30), transparent 64%),
-    #000;
+    radial-gradient(50vw 80vw at 50% -10%, rgba(26, 131, 0, 0.14), transparent 70%),
+    radial-gradient(40vw 60vw at 85% 80%, rgba(12, 74, 20, 0.18), transparent 60%),
+    #000000;
   background-attachment: fixed;
 }
 
@@ -148,11 +148,18 @@ body {
 
 /* Card do Módulo */
 .card-modulo {
-  transition: transform .2s cubic-bezier(.2,.7,.25,1), box-shadow .2s;
+  position: relative;
+  background: #0B110D;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 14px 34px -10px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: transform .2s cubic-bezier(.2,.7,.25,1), box-shadow .2s, border-color .2s;
 }
 .card-modulo:hover {
   transform: translateY(-4px);
-  box-shadow: 0 24px 50px -20px rgba(0,0,0,.9);
+  border-color: rgba(65, 242, 10, 0.35);
+  box-shadow: 0 24px 50px -20px rgba(0,0,0,.9), 0 0 20px -8px rgba(65, 242, 10, 0.2);
 }
 .card-modulo:hover .capa img {
   transform: none;

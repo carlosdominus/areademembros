@@ -44,11 +44,12 @@ export const AreaMembros: React.FC<AreaMembrosProps> = ({
     }
   }, [initialModulos]);
 
-  // Flatten de todas as aulas sequencialmente
+  // Flatten de todas as aulas dos módulos desbloqueados
   const todasAulasFlat = useMemo(() => {
     const list: { modulo: Modulo; aula: Aula; indexGlobal: number }[] = [];
     let idx = 0;
     modulos.forEach((mod) => {
+      if (mod.bloqueado || mod.ordem > 3) return;
       mod.aulas.forEach((aula) => {
         list.push({ modulo: mod, aula, indexGlobal: idx });
         idx++;
@@ -181,7 +182,8 @@ export const AreaMembros: React.FC<AreaMembrosProps> = ({
 
   const handleSelectModuloFromGrid = (modId: string) => {
     const targetModule = modulos.find((m) => m.id === modId);
-    if (targetModule && targetModule.aulas.length > 0) {
+    if (!targetModule || targetModule.bloqueado || targetModule.ordem > 3) return;
+    if (targetModule.aulas.length > 0) {
       setModuloAtualId(modId);
       const firstUncompleted = targetModule.aulas.find((a) => !a.concluida);
       setAulaAtualId(firstUncompleted ? firstUncompleted.id : targetModule.aulas[0].id);
@@ -191,7 +193,8 @@ export const AreaMembros: React.FC<AreaMembrosProps> = ({
 
   const handleSelectModuloFromSidebar = (modId: string) => {
     const targetModule = modulos.find((m) => m.id === modId);
-    if (targetModule && targetModule.aulas.length > 0) {
+    if (!targetModule || targetModule.bloqueado || targetModule.ordem > 3) return;
+    if (targetModule.aulas.length > 0) {
       setModuloAtualId(modId);
       setAulaAtualId(targetModule.aulas[0].id);
     }

@@ -8,43 +8,16 @@ export const modulosIniciaisMock: Modulo[] = [
     titulo: '1. Apresentação',
     capaUrl: 'https://membros.dominus.site/images/m1_converted.webp',
     publicado: true,
+    bloqueado: false,
     aulas: [
       {
         id: 'aula-1-1',
         moduloId: 'mod-1',
         ordem: 1,
-        titulo: 'Bem-vindo à Mentoria e Visão Geral',
-        descricao: 'Entenda os pilares do método, como funciona o suporte e o passo a passo para extrair o máximo de resultado da plataforma.',
+        titulo: 'Apresentação do curso',
+        descricao: 'Boas-vindas oficiais à mentoria, visão geral da jornada, estrutura do treinamento e alinhamento do método.',
         duracaoMin: 6,
-        vturbEmbedId: '',
-        materialUrl: '#',
-        publicado: true,
-        concluida: false,
-        materialAnexo: {
-          nome: 'Guia_de_Inicio_Rapido.pdf',
-          url: '#'
-        }
-      },
-      {
-        id: 'aula-1-2',
-        moduloId: 'mod-1',
-        ordem: 2,
-        titulo: 'Mentalidade e Foco de Execução',
-        descricao: 'Como alinhar suas expectativas, organizar sua rotina semanal e manter a consistência até o resultado.',
-        duracaoMin: 12,
-        vturbEmbedId: '',
-        materialUrl: null,
-        publicado: true,
-        concluida: false
-      },
-      {
-        id: 'aula-1-3',
-        moduloId: 'mod-1',
-        ordem: 3,
-        titulo: 'Acesso à Comunidade VIP e Canais Oficiais',
-        descricao: 'Como interagir com mentores, tirar dúvidas diariamente e participar dos encontros ao vivo.',
-        duracaoMin: 8,
-        vturbEmbedId: '',
+        vturbEmbedId: '6a95dfa8ce382b7f4fcc9073',
         materialUrl: null,
         publicado: true,
         concluida: false
@@ -57,31 +30,28 @@ export const modulosIniciaisMock: Modulo[] = [
     titulo: '2. Spy/Espionagem',
     capaUrl: 'https://membros.dominus.site/images/m2_converted.webp',
     publicado: true,
+    bloqueado: false,
     aulas: [
       {
         id: 'aula-2-1',
         moduloId: 'mod-2',
         ordem: 1,
-        titulo: 'Ferramentas Secretas de Espionagem de Anúncios',
-        descricao: 'Aprenda a mapear ofertas validadas em tempo real utilizando bibliotecas de anúncios e mineradores.',
-        duracaoMin: 18,
-        vturbEmbedId: '',
-        materialUrl: '#',
+        titulo: '1. Nível ético',
+        descricao: 'Diretrizes éticas e fundamentos essenciais para espionagem e modelagem de ofertas com inteligência e responsabilidade.',
+        duracaoMin: 8,
+        vturbEmbedId: '6a95dfd67e1edfe862b04295',
+        materialUrl: null,
         publicado: true,
-        concluida: false,
-        materialAnexo: {
-          nome: 'Lista_Ferramentas_Espionagem.pdf',
-          url: '#'
-        }
+        concluida: false
       },
       {
         id: 'aula-2-2',
         moduloId: 'mod-2',
         ordem: 2,
-        titulo: 'Como Desconstruir Funis Campeões dos Concorrentes',
-        descricao: 'Análise detalhada de páginas, copys, criativos e upsells das operações que mais faturam no mercado.',
-        duracaoMin: 24,
-        vturbEmbedId: '',
+        titulo: '2. Escolhendo ofertas',
+        descricao: 'Como minerar, filtrar e escolher as melhores ofertas validadas com alta conversão e potencial de escala imediata.',
+        duracaoMin: 15,
+        vturbEmbedId: '6a95e05d672b403ce783c154',
         materialUrl: null,
         publicado: true,
         concluida: false
@@ -90,10 +60,34 @@ export const modulosIniciaisMock: Modulo[] = [
         id: 'aula-2-3',
         moduloId: 'mod-2',
         ordem: 3,
-        titulo: 'Mapeamento de Métricas e Padrões de Sucesso',
-        descricao: 'Identifique os elementos visuais e ganchos que estão gerando engajamento e alta conversão no momento.',
-        duracaoMin: 16,
-        vturbEmbedId: '',
+        titulo: '3. Métodos de espionagem',
+        descricao: 'Ferramentas práticas e métodos avançados para mapear criativos, copys e páginas que mais vendem no mercado.',
+        duracaoMin: 18,
+        vturbEmbedId: '6a95e0b93d6810235ec56d20',
+        materialUrl: null,
+        publicado: true,
+        concluida: false
+      },
+      {
+        id: 'aula-2-4',
+        moduloId: 'mod-2',
+        ordem: 4,
+        titulo: '4. Camuflagem',
+        descricao: 'Técnicas de camuflagem e diferenciação para blindar sua esteira, proteger suas páginas e evitar saturação.',
+        duracaoMin: 12,
+        vturbEmbedId: '6a95e03601d8c35eb9bcc39e',
+        materialUrl: null,
+        publicado: true,
+        concluida: false
+      },
+      {
+        id: 'aula-2-5',
+        moduloId: 'mod-2',
+        ordem: 5,
+        titulo: '5. Próximo passo',
+        descricao: 'Orientações práticas de execução, checklist das etapas concluídas e direcionamento para a próxima fase.',
+        duracaoMin: 10,
+        vturbEmbedId: '6a95e000390d4bd1764abbea',
         materialUrl: null,
         publicado: true,
         concluida: false
@@ -106,6 +100,7 @@ export const modulosIniciaisMock: Modulo[] = [
     titulo: '3. Copywriting',
     capaUrl: 'https://membros.dominus.site/images/m3_converted.webp',
     publicado: true,
+    bloqueado: false,
     aulas: [
       {
         id: 'aula-3-1',
@@ -155,6 +150,7 @@ export const modulosIniciaisMock: Modulo[] = [
     titulo: '4. Edição de vídeo',
     capaUrl: 'https://membros.dominus.site/images/m4_converted.webp',
     publicado: true,
+    bloqueado: true,
     aulas: [
       {
         id: 'aula-4-1',
@@ -204,6 +200,7 @@ export const modulosIniciaisMock: Modulo[] = [
     titulo: '5. Estrutura',
     capaUrl: 'https://membros.dominus.site/images/m5_converted.webp',
     publicado: true,
+    bloqueado: true,
     aulas: [
       {
         id: 'aula-5-1',
@@ -249,6 +246,7 @@ export const modulosIniciaisMock: Modulo[] = [
     titulo: '6. Tráfego',
     capaUrl: 'https://membros.dominus.site/images/m6_converted.webp',
     publicado: true,
+    bloqueado: true,
     aulas: [
       {
         id: 'aula-6-1',
@@ -298,6 +296,7 @@ export const modulosIniciaisMock: Modulo[] = [
     titulo: '7. Gestão',
     capaUrl: 'https://membros.dominus.site/images/m7_converted.webp',
     publicado: true,
+    bloqueado: true,
     aulas: [
       {
         id: 'aula-7-1',

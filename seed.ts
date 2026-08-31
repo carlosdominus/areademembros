@@ -110,28 +110,15 @@ async function seed() {
   }
 
   // 3. Aulas
-  const testVTurbId = '67041a0e9a7e02000b12b50d'; // VTurb Test Player ID
-
   const aulas = [
     {
       id: 'aula-1-1',
       moduloId: 'mod-1',
       ordem: 1,
-      titulo: '01. Comece Por Aqui — Regras e Diretrizes da Mentoria',
-      descricao: 'Apresentação oficial da mentoria, visão geral da jornada, mentalidade de alta performance e canais de suporte.',
-      duracaoMin: 12,
-      vturbEmbedId: testVTurbId,
-      materialUrl: 'https://example.com/guia-boas-vindas.pdf',
-      publicado: true
-    },
-    {
-      id: 'aula-1-2',
-      moduloId: 'mod-1',
-      ordem: 2,
-      titulo: '02. Como Aproveitar ao Máximo a Comunidade e Encontros Ao Vivo',
-      descricao: 'Passo a passo estratégico para fazer networking com outros alunos, tirar dúvidas e participar dos encontros quinzenais.',
-      duracaoMin: 18,
-      vturbEmbedId: testVTurbId,
+      titulo: 'Apresentação do curso',
+      descricao: 'Boas-vindas oficiais à mentoria, visão geral da jornada, estrutura do treinamento e alinhamento do método.',
+      duracaoMin: 6,
+      vturbEmbedId: '6a95dfa8ce382b7f4fcc9073',
       materialUrl: null,
       publicado: true
     },
@@ -139,44 +126,55 @@ async function seed() {
       id: 'aula-2-1',
       moduloId: 'mod-2',
       ordem: 1,
-      titulo: '03. Estruturação da Oferta Irresistível de Alto Ticket',
-      descricao: 'Como definir a proposta de valor, precificação premium e validação rápida no mercado sem desperdiçar recursos.',
-      duracaoMin: 25,
-      vturbEmbedId: testVTurbId,
-      materialUrl: 'https://example.com/checklist-oferta.pdf',
+      titulo: '1. Nível ético',
+      descricao: 'Diretrizes éticas e fundamentos essenciais para espionagem e modelagem de ofertas com inteligência e responsabilidade.',
+      duracaoMin: 8,
+      vturbEmbedId: '6a95dfd67e1edfe862b04295',
+      materialUrl: null,
       publicado: true
     },
     {
       id: 'aula-2-2',
       moduloId: 'mod-2',
       ordem: 2,
-      titulo: '04. Funis de Atração e Conversão Exponencial',
-      descricao: 'Engenharia de funis de alta conversão, modelos de páginas, cópias persuasivas e direcionamento de tráfego qualificado.',
-      duracaoMin: 32,
-      vturbEmbedId: testVTurbId,
+      titulo: '2. Escolhendo ofertas',
+      descricao: 'Como minerar, filtrar e escolher as melhores ofertas validadas com alta conversão e potencial de escala imediata.',
+      duracaoMin: 15,
+      vturbEmbedId: '6a95e05d672b403ce783c154',
       materialUrl: null,
       publicado: true
     },
     {
-      id: 'aula-3-1',
-      moduloId: 'mod-3',
-      ordem: 1,
-      titulo: '05. Gestão de Equipe, Processos Enxutos e Automação',
-      descricao: 'Sistemas de delegação, checklists operacionais, ferramentas de gestão e contratação de talentos A-player.',
-      duracaoMin: 28,
-      vturbEmbedId: testVTurbId,
+      id: 'aula-2-3',
+      moduloId: 'mod-2',
+      ordem: 3,
+      titulo: '3. Métodos de espionagem',
+      descricao: 'Ferramentas práticas e métodos avançados para mapear criativos, copys e páginas que mais vendem no mercado.',
+      duracaoMin: 18,
+      vturbEmbedId: '6a95e0b93d6810235ec56d20',
       materialUrl: null,
       publicado: true
     },
     {
-      id: 'aula-3-2',
-      moduloId: 'mod-3',
-      ordem: 2,
-      titulo: '06. Encerramento e Plano de Ação Individual para 90 Dias',
-      descricao: 'Construção do seu roadmap individual para os próximos 90 dias com metas claras, marcos de receita e acompanhamento.',
-      duracaoMin: 20,
-      vturbEmbedId: testVTurbId,
-      materialUrl: 'https://example.com/roadmap-90dias.pdf',
+      id: 'aula-2-4',
+      moduloId: 'mod-2',
+      ordem: 4,
+      titulo: '4. Camuflagem',
+      descricao: 'Técnicas de camuflagem e diferenciação para blindar sua esteira, proteger suas páginas e evitar saturação.',
+      duracaoMin: 12,
+      vturbEmbedId: '6a95e03601d8c35eb9bcc39e',
+      materialUrl: null,
+      publicado: true
+    },
+    {
+      id: 'aula-2-5',
+      moduloId: 'mod-2',
+      ordem: 5,
+      titulo: '5. Próximo passo',
+      descricao: 'Orientações práticas de execução, checklist das etapas concluídas e direcionamento para a próxima fase.',
+      duracaoMin: 10,
+      vturbEmbedId: '6a95e000390d4bd1764abbea',
+      materialUrl: null,
       publicado: true
     }
   ];

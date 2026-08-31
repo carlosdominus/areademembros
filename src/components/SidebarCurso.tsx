@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X, ChevronDown, Check } from 'lucide-react';
+import { X, ChevronDown, Check, Lock } from 'lucide-react';
 import { Modulo } from '../types';
 import { CardModulo } from './CardModulo';
 
@@ -95,24 +95,33 @@ export const SidebarCurso: React.FC<SidebarCursoProps> = ({
             <div className="absolute left-0 right-0 top-[calc(100%+6px)] vidro rounded-[14px] p-2 shadow-2xl z-50 max-h-[260px] overflow-y-auto scrollbar-thin">
               {modulos.map((m) => {
                 const isSelected = m.id === moduloAtualId;
+                const isBloqueado = m.bloqueado || m.ordem > 3;
                 return (
                   <button
                     key={m.id}
                     type="button"
+                    disabled={isBloqueado}
                     onClick={() => {
+                      if (isBloqueado) return;
                       if (onSelectModulo) onSelectModulo(m.id);
                       setIsDropdownOpen(false);
                     }}
-                    className={`w-full text-left px-3 py-2.5 rounded-[10px] text-[13px] font-['Inter_Tight',sans-serif] flex items-center justify-between gap-2 cursor-pointer transition-all ${
-                      isSelected
-                        ? 'bg-[rgba(65,242,10,0.12)] text-[#41F20A] font-semibold border border-[rgba(65,242,10,0.30)]'
-                        : 'text-[#D9E4D6] hover:bg-[rgba(255,255,255,0.06)] hover:text-[#EDF4EB]'
+                    className={`w-full text-left px-3 py-2.5 rounded-[10px] text-[13px] font-['Inter_Tight',sans-serif] flex items-center justify-between gap-2 transition-all ${
+                      isBloqueado
+                        ? 'opacity-40 cursor-not-allowed text-[#A7B7A4] hover:bg-transparent'
+                        : isSelected
+                        ? 'bg-[rgba(65,242,10,0.12)] text-[#41F20A] font-semibold border border-[rgba(65,242,10,0.30)] cursor-pointer'
+                        : 'text-[#D9E4D6] hover:bg-[rgba(255,255,255,0.06)] hover:text-[#EDF4EB] cursor-pointer'
                     }`}
                   >
-                    <span className="truncate">
-                      {m.titulo} ({m.aulas.length} aulas)
+                    <span className="truncate flex items-center gap-1.5">
+                      {m.titulo} {isBloqueado ? '(Em breve)' : `(${m.aulas.length} aulas)`}
                     </span>
-                    {isSelected && <Check className="w-4 h-4 text-[#41F20A] shrink-0" />}
+                    {isBloqueado ? (
+                      <Lock className="w-3.5 h-3.5 text-[#A7B7A4] shrink-0" />
+                    ) : isSelected ? (
+                      <Check className="w-4 h-4 text-[#41F20A] shrink-0" />
+                    ) : null}
                   </button>
                 );
               })}

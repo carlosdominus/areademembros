@@ -22,6 +22,7 @@ export interface Modulo {
   titulo: string;
   capaUrl?: string;
   publicado: boolean;
+  bloqueado?: boolean;
   aulas: Aula[];
 }
 

@@ -70,12 +70,14 @@ export async function loadCourseData(uid: string): Promise<Modulo[]> {
       snapModulosResult.value.forEach((docSnap) => {
         const data = docSnap.data();
         if (data.publicado !== false) {
+          const isBloqueado = data.bloqueado !== undefined ? data.bloqueado : ((data.ordem || 1) > 3);
           modulosList.push({
             id: docSnap.id,
             ordem: data.ordem || 1,
             titulo: data.titulo || 'Módulo Sem Título',
             capaUrl: data.capaUrl || '',
             publicado: data.publicado ?? true,
+            bloqueado: isBloqueado,
             aulas: []
           });
         }

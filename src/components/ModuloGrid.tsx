@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { CheckCircle2, Play, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CheckCircle2, Play, ChevronLeft, ChevronRight, Lock } from 'lucide-react';
 import { Modulo } from '../types';
 
 interface ModuloGridProps {
@@ -16,7 +16,7 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
   const carouselRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
-  const [isAtEnd, setIsAtEnd] = useState(false);
+  const [lockedToast, setLockedToast] = useState<string | null>(null);
   const [visibleEndIndex, setVisibleEndIndex] = useState<number>(() =>
     typeof window !== 'undefined' && window.innerWidth < 640 ? 1 : 4
   );
@@ -29,7 +29,6 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
 
       setCanScrollLeft(!atStart);
       setCanScrollRight(!atEnd);
-      setIsAtEnd(atEnd);
 
       const children = Array.from(carouselRef.current.children) as HTMLElement[];
       if (children.length > 0) {
@@ -70,9 +69,10 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
     }
   }, [modulos, updateScrollState]);
 
-  // Calculate total course stats
-  const totalAulas = modulos.reduce((acc, m) => acc + m.aulas.length, 0);
-  const aulasConcluidas = modulos.reduce(
+  // Calculate total course stats (apenas dos módulos disponíveis)
+  const modulosDisponiveis = modulos.filter((m) => !m.bloqueado && m.ordem <= 3);
+  const totalAulas = modulosDisponiveis.reduce((acc, m) => acc + m.aulas.length, 0);
+  const aulasConcluidas = modulosDisponiveis.reduce(
     (acc, m) => acc + m.aulas.filter((a) => a.concluida).length,
     0
   );
@@ -128,13 +128,25 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
     setTimeout(updateScrollState, 350);
   };
 
+  const handleCardClick = (modulo: Modulo) => {
+    const isBloqueado = modulo.bloqueado || modulo.ordem > 3;
+    if (isBloqueado) {
+      setLockedToast(`${modulo.titulo}: este módulo será liberado em breve!`);
+      setTimeout(() => {
+        setLockedToast(null);
+      }, 3500);
+      return;
+    }
+    onSelectModulo(modulo.id);
+  };
+
   if (loading) {
     return (
       <div className="w-full space-y-6 animate-pulse">
         <div className="h-8 w-64 bg-[rgba(255,255,255,0.05)] rounded-lg" />
         <div className="flex gap-4 overflow-hidden py-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="w-[calc((100%-3*1.25rem)/4)] h-[420px] vidro rounded-[20px] shrink-0" />
+            <div key={i} className="w-[calc((100%-3*1.25rem)/4)] h-[420px] bg-[#0B110D] border border-[rgba(255,255,255,0.08)] rounded-[20px] shrink-0" />
           ))}
         </div>
       </div>
@@ -142,7 +154,19 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
   }
 
   return (
-    <div className="w-full space-y-6 animate-in fade-in duration-300">
+    <div className="w-full space-y-6 animate-in fade-in duration-300 relative">
+      {/* Toast de Módulo Bloqueado */}
+      {lockedToast && (
+        <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-3 duration-200">
+          <div className="vidro px-4 py-3 rounded-[14px] bg-[rgba(14,20,16,0.96)] border border-[rgba(255,255,255,0.18)] shadow-2xl flex items-center gap-3 text-[13.5px] text-[#EDF4EB]">
+            <div className="w-7 h-7 rounded-[8px] bg-[rgba(255,255,255,0.08)] border border-[rgba(255,255,255,0.14)] flex items-center justify-center text-[#A7B7A4] shrink-0">
+              <Lock className="w-3.5 h-3.5" />
+            </div>
+            <span>{lockedToast}</span>
+          </div>
+        </div>
+      )}
+
       {/* Top Header: Title + Overall Progress + Navigation Controls */}
       <div className="pb-3 border-b border-[rgba(255,255,255,0.08)] space-y-2">
         {/* Linha 1: Título e Progresso Geral (Desktop) */}
@@ -152,7 +176,7 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
           </h1>
           <div className="text-right hidden md:block font-['Inter_Tight',sans-serif]">
             <span className="text-[12.5px] font-semibold text-[#D9E4D6] block">
-              Progresso Geral: <strong className="text-[#41F20A] font-bold">{progressoGeral}%</strong>
+              Progresso (Módulos 1 a 3): <strong className="text-[#41F20A] font-bold">{progressoGeral}%</strong>
             </span>
             <span className="text-[12px] text-[#A7B7A4]">
               {aulasConcluidas} de {totalAulas} aulas concluídas
@@ -210,24 +234,8 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
         </div>
       </div>
 
-      {/* Vertical Image Carousel Slider with Mobile Degrade Fade on cut edges */}
+      {/* Vertical Image Carousel Slider */}
       <div className="relative group">
-        {/* Mobile Left Fade Gradient: suaviza o corte do módulo anterior APENAS quando chegar no final (ex: módulo 7) */}
-        <div
-          aria-hidden="true"
-          className={`sm:hidden absolute -left-4 -top-6 -bottom-6 w-[40vw] max-w-[160px] z-20 pointer-events-none transition-opacity duration-300 bg-gradient-to-r from-black via-black/85 to-transparent ${
-            isAtEnd ? 'opacity-100' : 'opacity-0'
-          }`}
-        />
-
-        {/* Mobile Right Fade Gradient: suaviza o corte do módulo seguinte até chegar no último módulo */}
-        <div
-          aria-hidden="true"
-          className={`sm:hidden absolute -right-4 -top-6 -bottom-6 w-[40vw] max-w-[160px] z-20 pointer-events-none transition-opacity duration-300 bg-gradient-to-l from-black via-black/85 to-transparent ${
-            !isAtEnd ? 'opacity-100' : 'opacity-0'
-          }`}
-        />
-
         <div
           ref={carouselRef}
           className="flex gap-4 sm:gap-5 overflow-x-auto scrollbar-none pt-3 pb-8 snap-x snap-mandatory scroll-smooth"
@@ -237,6 +245,7 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
           }}
         >
           {modulos.map((modulo) => {
+            const isBloqueado = modulo.bloqueado || modulo.ordem > 3;
             const totalM = modulo.aulas.length;
             const concluidasM = modulo.aulas.filter((a) => a.concluida).length;
             const pctM = totalM > 0 ? Math.round((concluidasM / totalM) * 100) : 0;
@@ -245,8 +254,10 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
             return (
               <div
                 key={modulo.id}
-                onClick={() => onSelectModulo(modulo.id)}
-                className="card-modulo snap-start shrink-0 w-[58vw] max-w-[240px] sm:max-w-none sm:w-[calc((100%-1.25rem)/2)] md:w-[calc((100%-2*1.25rem)/3)] lg:w-[calc((100%-3*1.25rem)/4)] group/card relative vidro rounded-[20px] cursor-pointer flex flex-col"
+                onClick={() => handleCardClick(modulo)}
+                className={`card-modulo snap-start shrink-0 w-[58vw] max-w-[240px] sm:max-w-none sm:w-[calc((100%-1.25rem)/2)] md:w-[calc((100%-2*1.25rem)/3)] lg:w-[calc((100%-3*1.25rem)/4)] group/card relative rounded-[20px] flex flex-col ${
+                  isBloqueado ? 'cursor-pointer opacity-90' : 'cursor-pointer'
+                }`}
               >
                 {/* Vertical Poster Cover (3:4 aspect ratio) */}
                 <div className="capa bg-[#080D0A]">
@@ -254,7 +265,9 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
                     <img
                       src={modulo.capaUrl}
                       alt={modulo.titulo}
-                      className="w-full h-full object-cover select-none"
+                      className={`w-full h-full object-cover select-none ${
+                        isBloqueado ? 'brightness-90 contrast-[0.95]' : ''
+                      }`}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#080D0A] to-[rgba(26,131,0,0.2)]">
@@ -262,31 +275,49 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
                     </div>
                   )}
 
-                  {/* Completed Badge */}
-                  {pctM === 100 && (
-                    <div className="absolute top-3 right-3 bg-[#41F20A] text-[#062800] px-2.5 py-1 rounded-[6px] text-[10px] font-bold font-['Inter_Tight',sans-serif] flex items-center gap-1 shadow-md z-10">
+                  {/* Minimalist Lock / Status Badge */}
+                  {isBloqueado ? (
+                    <div className="absolute top-3 right-3 bg-[rgba(10,15,12,0.85)] border border-[rgba(255,255,255,0.15)] text-[#EDF4EB] px-2.5 py-1 rounded-[8px] text-[11px] font-medium font-['Inter_Tight',sans-serif] flex items-center gap-1.5 shadow-lg backdrop-blur-md z-10 select-none">
+                      <Lock className="w-3 h-3 text-[#A7B7A4]" />
+                      <span>Em breve</span>
+                    </div>
+                  ) : pctM === 100 ? (
+                    <div className="absolute top-3 right-3 bg-[#41F20A] text-[#062800] px-2.5 py-1 rounded-[6px] text-[10px] font-bold font-['Inter_Tight',sans-serif] flex items-center gap-1 shadow-md z-10 select-none">
                       <CheckCircle2 className="w-3.5 h-3.5 stroke-[3]" />
                       <span>CONCLUÍDO</span>
                     </div>
-                  )}
+                  ) : null}
 
-                  {/* Hover Play Button (sem escurecer a imagem) */}
-                  <div className="absolute inset-0 opacity-0 group-hover/card:opacity-100 transition-opacity duration-200 flex items-center justify-center z-10 pointer-events-none">
-                    <div
-                      style={{
-                        background: 'linear-gradient(180deg, #7BFA45 0%, #41F20A 46%, #2BB102 64%, #1A8300 100%)'
-                      }}
-                      className="w-14 h-14 rounded-full text-[#062800] flex items-center justify-center font-bold shadow-[0_8px_24px_rgba(0,0,0,0.6)]"
-                    >
-                      <Play className="w-7 h-7 fill-current ml-1" />
+                  {/* Hover State */}
+                  {isBloqueado ? (
+                    <div className="absolute inset-0 opacity-0 group-hover/card:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-2 z-10 pointer-events-none bg-black/45 backdrop-blur-[2px]">
+                      <div className="w-12 h-12 rounded-full bg-[rgba(255,255,255,0.08)] border border-[rgba(255,255,255,0.18)] text-[#D9E4D6] flex items-center justify-center shadow-lg">
+                        <Lock className="w-5 h-5 text-[#A7B7A4]" />
+                      </div>
+                      <span className="text-[11.5px] font-medium text-[#EDF4EB] bg-black/70 px-2.5 py-0.5 rounded-full border border-white/10">
+                        Em breve
+                      </span>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="absolute inset-0 opacity-0 group-hover/card:opacity-100 transition-opacity duration-200 flex items-center justify-center z-10 pointer-events-none">
+                      <div
+                        style={{
+                          background: 'linear-gradient(180deg, #7BFA45 0%, #41F20A 46%, #2BB102 64%, #1A8300 100%)'
+                        }}
+                        className="w-14 h-14 rounded-full text-[#062800] flex items-center justify-center font-bold shadow-[0_8px_24px_rgba(0,0,0,0.6)]"
+                      >
+                        <Play className="w-7 h-7 fill-current ml-1" />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Card Info Details */}
                 <div className="p-4 flex-1 flex flex-col justify-between rounded-b-[20px]">
                   <div>
-                    <h3 className="font-['Inter_Tight',sans-serif] font-semibold text-[15px] text-[#EDF4EB] group-hover/card:text-[#41F20A] transition-colors leading-tight line-clamp-1">
+                    <h3 className={`font-['Inter_Tight',sans-serif] font-semibold text-[15px] transition-colors leading-tight line-clamp-1 ${
+                      isBloqueado ? 'text-[#D9E4D6] group-hover/card:text-[#EDF4EB]' : 'text-[#EDF4EB] group-hover/card:text-[#41F20A]'
+                    }`}>
                       {modulo.titulo}
                     </h3>
                     <p className="font-['Inter_Tight',sans-serif] font-normal text-[12.5px] text-[#A7B7A4] mt-1">
@@ -294,26 +325,41 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
                     </p>
                   </div>
 
-                  {/* Progress Bar (0% state leaves track only, non-green) */}
-                  <div className="mt-3.5 pt-2.5 border-t border-[rgba(255,255,255,0.08)]">
-                    <div className="flex items-center justify-between text-[11.5px] font-['Inter_Tight',sans-serif] font-medium mb-1.5 text-[#D9E4D6]">
-                      <span>{concluidasM} de {totalM} aulas concluídas</span>
-                      <span className={pctM > 0 ? 'text-[#41F20A] font-bold' : 'text-[#D9E4D6]'}>
-                        {pctM}%
-                      </span>
+                  {/* Progress Bar / Locked Status Bar */}
+                  {isBloqueado ? (
+                    <div className="mt-3.5 pt-2.5 border-t border-[rgba(255,255,255,0.08)]">
+                      <div className="flex items-center justify-between text-[11.5px] font-['Inter_Tight',sans-serif] font-medium text-[#A7B7A4]">
+                        <span className="flex items-center gap-1.5">
+                          <Lock className="w-3 h-3 text-[#A7B7A4]" />
+                          <span>Bloqueado</span>
+                        </span>
+                        <span className="text-[#A7B7A4] font-medium text-[11px]">
+                          Em breve
+                        </span>
+                      </div>
+                      <div className="w-full h-[4px] bg-[rgba(255,255,255,0.05)] rounded-full overflow-hidden mt-1.5" />
                     </div>
-                    <div className="w-full h-[4px] bg-[rgba(255,255,255,0.09)] rounded-full overflow-hidden">
-                      {pctM > 0 && (
-                        <div
-                          className="h-full rounded-full transition-all duration-300"
-                          style={{
-                            width: `${pctM}%`,
-                            background: 'linear-gradient(90deg, #2BB102, #41F20A)'
-                          }}
-                        />
-                      )}
+                  ) : (
+                    <div className="mt-3.5 pt-2.5 border-t border-[rgba(255,255,255,0.08)]">
+                      <div className="flex items-center justify-between text-[11.5px] font-['Inter_Tight',sans-serif] font-medium mb-1.5 text-[#D9E4D6]">
+                        <span>{concluidasM} de {totalM} aulas concluídas</span>
+                        <span className={pctM > 0 ? 'text-[#41F20A] font-bold' : 'text-[#D9E4D6]'}>
+                          {pctM}%
+                        </span>
+                      </div>
+                      <div className="w-full h-[4px] bg-[rgba(255,255,255,0.09)] rounded-full overflow-hidden">
+                        {pctM > 0 && (
+                          <div
+                            className="h-full rounded-full transition-all duration-300"
+                            style={{
+                              width: `${pctM}%`,
+                              background: 'linear-gradient(90deg, #2BB102, #41F20A)'
+                            }}
+                          />
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             );
