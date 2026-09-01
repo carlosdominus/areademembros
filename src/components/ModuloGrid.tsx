@@ -261,19 +261,20 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
               >
                 {/* Vertical Poster Cover (3:4 aspect ratio) */}
                 <div className="capa bg-[#080D0A]">
-                  {modulo.capaUrl ? (
-                    <img
-                      src={modulo.capaUrl}
-                      alt={modulo.titulo}
-                      className={`w-full h-full object-cover select-none ${
-                        isBloqueado ? 'brightness-90 contrast-[0.95]' : ''
-                      }`}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#080D0A] to-[rgba(26,131,0,0.2)]">
-                      <div className="titulo">{modulo.titulo}</div>
-                    </div>
-                  )}
+                  <img
+                    src={modulo.capaUrl || `https://membros.dominus.site/images/m${modulo.ordem}_converted.webp`}
+                    alt={modulo.titulo}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      const fallback = `/images/m${modulo.ordem}_converted.webp`;
+                      if (target.src !== fallback && !target.src.endsWith(fallback)) {
+                        target.src = fallback;
+                      }
+                    }}
+                    className={`w-full h-full object-cover select-none ${
+                      isBloqueado ? 'brightness-90 contrast-[0.95]' : ''
+                    }`}
+                  />
 
                   {/* Minimalist Lock / Status Badge */}
                   {isBloqueado ? (

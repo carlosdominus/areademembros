@@ -38,13 +38,32 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number, fallbackValue: T
   ]);
 }
 
+function getLocalProgresso(uid: string): Record<string, ProgressoAula> {
+  try {
+    const raw = localStorage.getItem(`progresso_${uid}`);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveLocalProgresso(uid: string, map: Record<string, ProgressoAula>) {
+  try {
+    localStorage.setItem(`progresso_${uid}`, JSON.stringify(map));
+  } catch {
+    // ignore
+  }
+}
+
 /**
  * Busca todos os módulos e aulas do Firestore (ou dados mock de contingência).
  * Executa as requisições em paralelo e com limite de tempo estrito (2.5s).
  */
 export async function loadCourseData(uid: string): Promise<Modulo[]> {
+  const localProg = getLocalProgresso(uid);
+
   const fetchProcess = async (): Promise<Modulo[]> => {
-    const progressoMap: Record<string, ProgressoAula> = {};
+    const progressoMap: Record<string, ProgressoAula> = { ...localProg };
 
     // Executa em paralelo: Progresso + Módulos + Aulas
     const progressoRef = collection(db, 'progresso', uid, 'aulas');
@@ -61,8 +80,14 @@ export async function loadCourseData(uid: string): Promise<Modulo[]> {
 
     if (snapProgressoResult.status === 'fulfilled') {
       snapProgressoResult.value.forEach((docSnap) => {
-        progressoMap[docSnap.id] = docSnap.data() as ProgressoAula;
+        const data = docSnap.data() as ProgressoAula;
+        progressoMap[docSnap.id] = {
+          ...progressoMap[docSnap.id],
+          ...data
+        };
       });
+      // Salva no cache local sincronizado
+      saveLocalProgresso(uid, progressoMap);
     }
 
     const modulosList: Modulo[] = [];
@@ -71,11 +96,16 @@ export async function loadCourseData(uid: string): Promise<Modulo[]> {
         const data = docSnap.data();
         if (data.publicado !== false) {
           const isBloqueado = data.bloqueado !== undefined ? data.bloqueado : ((data.ordem || 1) > 3);
+          const ordem = data.ordem || 1;
+          const capaUrl = data.capaUrl && !data.capaUrl.includes('membros.dominus.site/images')
+            ? data.capaUrl
+            : `/capas/m${ordem}.webp`;
+
           modulosList.push({
             id: docSnap.id,
-            ordem: data.ordem || 1,
+            ordem: ordem,
             titulo: data.titulo || 'Módulo Sem Título',
-            capaUrl: data.capaUrl || '',
+            capaUrl: capaUrl,
             publicado: data.publicado ?? true,
             bloqueado: isBloqueado,
             aulas: []
@@ -109,6 +139,7 @@ export async function loadCourseData(uid: string): Promise<Modulo[]> {
             materialUrl: data.materialUrl || null,
             materialAnexo: materialAnexo,
             publicado: data.publicado ?? true,
+            emBreve: data.emBreve ?? false,
             concluida: false,
             avaliacao: null
           });
@@ -116,49 +147,98 @@ export async function loadCourseData(uid: string): Promise<Modulo[]> {
       });
     }
 
-    // Se o banco contiver módulos e aulas, une-os com o progresso
-    if (modulosList.length > 0 && aulasList.length > 0) {
-      const moduloMap = new Map<string, Modulo>();
-      modulosList.forEach((m) => moduloMap.set(m.id, m));
+    // Mapa de todas as aulas do catálogo padrão (dados-mock)
+    const mockAulasMap = new Map<string, Aula>();
+    const mockModulosMap = new Map<string, Modulo>();
+    modulosIniciaisMock.forEach((mod) => {
+      mockModulosMap.set(mod.id, mod);
+      mod.aulas.forEach((a) => mockAulasMap.set(a.id, a));
+    });
 
-      aulasList.forEach((aula) => {
-        const prog = progressoMap[aula.id];
-        const aulaComProgresso: Aula = {
-          ...aula,
-          concluida: prog?.concluida ?? false,
-          avaliacao: prog?.avaliacao ?? null
-        };
+    // Se o banco contiver módulos e aulas, une-os com o catálogo atualizado e progresso
+    const baseModulos = modulosList.length > 0 ? modulosList : modulosIniciaisMock.map((m) => ({ ...m, aulas: [] }));
+    const moduloMap = new Map<string, Modulo>();
+    
+    // Inicializa os módulos garantindo capas válidas e ordem correta
+    baseModulos.forEach((m) => {
+      const mockMod = mockModulosMap.get(m.id);
+      const ordem = m.ordem || mockMod?.ordem || 1;
+      const capaUrl = `https://membros.dominus.site/images/m${ordem}_converted.webp`;
 
-        const modTarget = moduloMap.get(aula.moduloId);
-        if (modTarget) {
-          modTarget.aulas.push(aulaComProgresso);
-        }
+      moduloMap.set(m.id, {
+        ...m,
+        titulo: mockMod?.titulo || m.titulo,
+        capaUrl: capaUrl,
+        aulas: []
       });
+    });
 
-      modulosList.forEach((m) => {
-        m.aulas.sort((a, b) => a.ordem - b.ordem);
+    // Garante que todos os módulos do mock existam
+    modulosIniciaisMock.forEach((mockMod) => {
+      if (!moduloMap.has(mockMod.id)) {
+        moduloMap.set(mockMod.id, {
+          ...mockMod,
+          capaUrl: `https://membros.dominus.site/images/m${mockMod.ordem}_converted.webp`,
+          aulas: []
+        });
+      }
+    });
+
+    // Mapa consolidado de aulas (Mock tem prioridade para metadados atualizados de catálogo)
+    const todasAulasMap = new Map<string, Aula>();
+
+    // 1. Carrega todas as aulas do catálogo mock com suas informações mais recentes
+    modulosIniciaisMock.forEach((mod) => {
+      mod.aulas.forEach((aula) => {
+        todasAulasMap.set(aula.id, { ...aula });
       });
+    });
 
-      return modulosList;
-    }
+    // 2. Se houver aulas adicionais no Firestore criadas dinamicamente, inclui também
+    aulasList.forEach((firestoreAula) => {
+      if (!todasAulasMap.has(firestoreAula.id)) {
+        todasAulasMap.set(firestoreAula.id, firestoreAula);
+      }
+    });
 
-    // Retorna fallback do catálogo mock aplicando qualquer progresso obtido
-    return modulosIniciaisMock.map((mod) => ({
-      ...mod,
-      aulas: mod.aulas.map((aula) => {
-        const prog = progressoMap[aula.id];
-        return {
-          ...aula,
-          concluida: prog?.concluida ?? false,
-          avaliacao: prog?.avaliacao ?? null
-        };
-      })
-    }));
+    // 3. Distribui as aulas nos módulos correspondentes aplicando o progresso do usuário
+    todasAulasMap.forEach((aula) => {
+      const prog = progressoMap[aula.id];
+      const aulaComProgresso: Aula = {
+        ...aula,
+        concluida: prog?.concluida ?? false,
+        avaliacao: prog?.avaliacao ?? null
+      };
+
+      const modTarget = moduloMap.get(aula.moduloId);
+      if (modTarget) {
+        modTarget.aulas.push(aulaComProgresso);
+      }
+    });
+
+    // Ordena os módulos e suas respectivas aulas
+    const resultadoFinal = Array.from(moduloMap.values()).sort((a, b) => a.ordem - b.ordem);
+    resultadoFinal.forEach((m) => {
+      m.aulas.sort((a, b) => a.ordem - b.ordem);
+    });
+
+    return resultadoFinal;
   };
 
-  // Garante resposta em no máximo 2.5 segundos
-  const fallbackMockData = modulosIniciaisMock;
-  return withTimeout(fetchProcess(), 2500, fallbackMockData);
+  // Garante resposta rápida e aplica fallback com progresso local se necessário
+  const fallbackWithLocal = modulosIniciaisMock.map((mod) => ({
+    ...mod,
+    aulas: mod.aulas.map((aula) => {
+      const prog = localProg[aula.id];
+      return {
+        ...aula,
+        concluida: prog?.concluida ?? false,
+        avaliacao: prog?.avaliacao ?? null
+      };
+    })
+  }));
+
+  return withTimeout(fetchProcess(), 2500, fallbackWithLocal);
 }
 
 /**
@@ -170,16 +250,29 @@ export async function updateLessonProgress(
   concluida: boolean,
   avaliacao?: number | null
 ): Promise<void> {
-  const docRef = doc(db, 'progresso', uid, 'aulas', aulaId);
-  const dataToUpdate: Record<string, any> = {
+  // Salva no cache local imediatamente
+  const localMap = getLocalProgresso(uid);
+  localMap[aulaId] = {
+    ...localMap[aulaId],
     concluida,
-    atualizadoEm: serverTimestamp()
+    avaliacao: avaliacao !== undefined ? avaliacao : (localMap[aulaId]?.avaliacao ?? null)
   };
-  if (avaliacao !== undefined) {
-    dataToUpdate.avaliacao = avaliacao;
-  }
+  saveLocalProgresso(uid, localMap);
 
-  await setDoc(docRef, dataToUpdate, { merge: true });
+  try {
+    const docRef = doc(db, 'progresso', uid, 'aulas', aulaId);
+    const dataToUpdate: Record<string, any> = {
+      concluida,
+      atualizadoEm: serverTimestamp()
+    };
+    if (avaliacao !== undefined) {
+      dataToUpdate.avaliacao = avaliacao;
+    }
+
+    await setDoc(docRef, dataToUpdate, { merge: true });
+  } catch (err) {
+    console.warn('Erro ao sincronizar progresso no Firestore:', err);
+  }
 }
 
 /**
@@ -190,6 +283,15 @@ export async function updateLessonRating(
   aulaId: string,
   avaliacao: number
 ): Promise<void> {
+  // Salva no cache local imediatamente
+  const localMap = getLocalProgresso(uid);
+  localMap[aulaId] = {
+    concluida: localMap[aulaId]?.concluida ?? false,
+    ...localMap[aulaId],
+    avaliacao
+  };
+  saveLocalProgresso(uid, localMap);
+
   try {
     const docRef = doc(db, 'progresso', uid, 'aulas', aulaId);
     await setDoc(docRef, {

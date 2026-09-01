@@ -8,7 +8,7 @@ interface AdminPanelProps {
 }
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
-  const [adminKey, setAdminKey] = useState('cakto2026');
+  const [adminKey, setAdminKey] = useState('dominus2026');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeTab, setActiveTab] = useState<'whitelist' | 'sheets' | 'import' | 'audit' | 'lessons'>('whitelist');
   const [whitelist, setWhitelist] = useState<WhitelistEntry[]>([]);
@@ -247,7 +247,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                 type="password"
                 value={adminKey}
                 onChange={(e) => setAdminKey(e.target.value)}
-                placeholder="Chave (padrão: cakto2026)"
+                placeholder="Chave (padrão: dominus2026)"
                 className="w-full adsata-input rounded-xl px-4 py-2.5 text-xs text-white text-center font-mono"
               />
               <button
@@ -638,7 +638,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                         type="text"
                         value={editTitle}
                         onChange={(e) => setEditTitle(e.target.value)}
-                        placeholder="Ex: Introdução à Mentoria Cakto"
+                        placeholder="Ex: Introdução à Mentoria Dominus"
                         className="w-full adsata-input rounded-xl px-3 py-2 text-xs"
                       />
                     </div>

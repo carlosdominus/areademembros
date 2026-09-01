@@ -8,6 +8,7 @@ export interface Aula {
   vturbEmbedId: string;
   materialUrl: string | null;
   publicado: boolean;
+  emBreve?: boolean;
   concluida?: boolean;
   avaliacao?: number | null;
   materialAnexo?: {
@@ -83,3 +84,5 @@ export interface CourseData {
   modules: Modulo[];
   totalLessons: number;
 }
+
+

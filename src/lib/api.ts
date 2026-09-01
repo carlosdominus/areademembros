@@ -1,6 +1,6 @@
 import { CourseData, Comment, WhitelistEntry, AuditLog, UserSession } from '../types';
 
-const TOKEN_KEY = 'cakto_members_session_token';
+const TOKEN_KEY = 'dominus_members_session_token';
 
 export function getStoredToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from './lib/firebase';
@@ -11,10 +11,8 @@ import { loadCourseData } from './lib/courseService';
 import { preloadModuleImages } from './lib/cacheService';
 import { Modulo } from './types';
 import { LoginModal } from './components/LoginModal';
+import { AreaMembros } from './components/AreaMembros';
 import { RefreshCw } from 'lucide-react';
-
-// Code-splitting: Área de membros carregada dinamicamente via lazy loading
-const AreaMembros = lazy(() => import('./components/AreaMembros'));
 
 export function AppContent() {
   const [user, setUser] = useState<User | null>(null);
@@ -102,35 +100,14 @@ export function AppContent() {
     );
   }
 
-  // Se autenticado, carrega a Área de Membros com Suspense
+  // Se autenticado, carrega a Área de Membros
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen w-full flex items-center justify-center p-4 relative overflow-hidden text-[#EDF4EB] font-body bg-[#000]">
-          <div className="grao" />
-          <div className="relative z-10 w-full max-w-sm vidro rounded-[20px] p-8 text-center space-y-4 shadow-2xl border border-[rgba(255,255,255,0.1)]">
-            <div className="w-14 h-14 rounded-2xl bg-[rgba(65,242,10,0.08)] border border-[rgba(65,242,10,0.22)] flex items-center justify-center mx-auto shadow-inner">
-              <RefreshCw className="w-6 h-6 text-[#41F20A] animate-spin" />
-            </div>
-            <div>
-              <p className="text-[13px] font-semibold text-[#41F20A] tracking-wider uppercase">
-                Área de Membros
-              </p>
-              <p className="text-[12px] text-[#A7B7A4] mt-1">
-                Carregando catálogo e aulas...
-              </p>
-            </div>
-          </div>
-        </div>
-      }
-    >
-      <AreaMembros
-        user={user}
-        modulos={modulos}
-        dataLoading={dataLoading}
-        onLogout={handleLogout}
-      />
-    </Suspense>
+    <AreaMembros
+      user={user}
+      modulos={modulos}
+      dataLoading={dataLoading}
+      onLogout={handleLogout}
+    />
   );
 }
 

@@ -54,7 +54,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ lesson }) => {
               </div>
               <div>
                 <p className="text-sm font-bold text-white drop-shadow-md">{lesson.title}</p>
-                <p className="text-[11px] text-[#22E025] font-medium">Mentoria Cakto Members</p>
+                <p className="text-[11px] text-[#22E025] font-medium">Mentoria Dominus Members</p>
               </div>
             </div>
 

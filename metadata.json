@@ -1,6 +1,6 @@
 {
-  "name": "Cakto Mentoria - Área de Membros",
-  "description": "Área de membros ultra segura para mentorias com autorização server-side por lista de e-mails, reprodutor de vídeo, módulos interativos e painel admin.",
+  "name": "Dominus Mentoria - Área de Membros",
+  "description": "Área de membros ultra segura para mentoria Dominus com autorização server-side por lista de e-mails, reprodutor de vídeo, módulos interativos e navegação fluida.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

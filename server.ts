@@ -6,8 +6,8 @@ import { createServer as createViteServer } from 'vite';
 
 const app = express();
 const PORT = 3000;
-const SECRET_KEY = process.env.JWT_SECRET || 'cakto-mentoria-secret-key-2026-super-secure';
-const MASTER_ADMIN_KEY = process.env.ADMIN_KEY || 'cakto2026';
+const SECRET_KEY = process.env.JWT_SECRET || 'dominus-mentoria-secret-key-2026-super-secure';
+const MASTER_ADMIN_KEY = process.env.ADMIN_KEY || 'dominus2026';
 
 app.use(express.json());
 
@@ -491,7 +491,7 @@ async function syncFromGoogleSheet(sheetUrl: string): Promise<{ success: boolean
     }
 
     const response = await fetch(csvUrl, {
-      headers: { 'User-Agent': 'CaktoMembersServer/1.0' },
+      headers: { 'User-Agent': 'DominusMembersServer/1.0' },
       redirect: 'follow'
     });
 

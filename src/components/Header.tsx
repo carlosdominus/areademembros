@@ -45,7 +45,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
           <div className="flex items-center gap-2.5">
             <h1 className="font-extrabold text-white text-base lg:text-lg tracking-tight">
-              Cakto Members
+              Dominus Members
             </h1>
           </div>
         </div>
