@@ -1,0 +1,126 @@
+name: Deploy para o cPanel
+
+# Dispara a cada push na main e também manualmente (aba Actions -> Run workflow).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Evita que dois deploys rodem ao mesmo tempo e embaralhem os arquivos no servidor.
+concurrency:
+  group: deploy-cpanel
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Preparar o Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependências
+        run: npm install --no-audit --no-fund
+
+      # Opcional: se o segredo DOTENV existir, ele vira o .env usado no build.
+      # Serve para o caso de as chaves do Firebase do servidor serem diferentes
+      # das que estão no firebase-applet-config.json do repositório.
+      - name: Aplicar variáveis de ambiente (se houver)
+        env:
+          DOTENV: ${{ secrets.DOTENV }}
+        run: |
+          if [ -n "$DOTENV" ]; then
+            printf '%s' "$DOTENV" > .env
+            echo "Arquivo .env aplicado a partir do segredo DOTENV."
+          else
+            echo "Nenhum segredo DOTENV definido; usando firebase-applet-config.json."
+          fi
+
+      - name: Gerar o build de produção
+        run: npm run build
+
+      - name: Conferir o build
+        run: |
+          test -f dist/index.html || { echo "::error::dist/index.html não foi gerado."; exit 1; }
+          test -f dist/server.cjs || { echo "::error::dist/server.cjs não foi gerado."; exit 1; }
+          echo "Build conferido:"
+          ls -la dist
+
+      - name: Instalar o lftp
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+
+      - name: Enviar o dist para o cPanel
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+        run: |
+          set -euo pipefail
+
+          for v in FTP_HOST FTP_USER FTP_PASSWORD DEPLOY_PATH; do
+            if [ -z "${!v}" ]; then
+              echo "::error::$v não está configurado. Veja .github/workflows/README-deploy.md"
+              exit 1
+            fi
+          done
+
+          # Trava de segurança: só envia se o destino já for um dist válido no servidor.
+          # Isso impede que um DEPLOY_PATH errado apague a pasta errada.
+          cat > /tmp/check.lftp <<EOF
+          set ftp:ssl-force true
+          set ftp:ssl-protect-data true
+          set ssl:verify-certificate no
+          open -u "$FTP_USER","$FTP_PASSWORD" "$FTP_HOST"
+          cls -1 "$DEPLOY_PATH/dist/index.html"
+          bye
+          EOF
+          if ! lftp -f /tmp/check.lftp > /dev/null 2>&1; then
+            echo "::error::Não encontrei $DEPLOY_PATH/dist/index.html no servidor."
+            echo "::error::Confirme o valor da variável DEPLOY_PATH antes de seguir."
+            exit 1
+          fi
+
+          # Espelha o dist local no servidor. O --delete remove apenas o que está
+          # dentro de $DEPLOY_PATH/dist (bundles antigos com hash no nome).
+          cat > /tmp/deploy.lftp <<EOF
+          set ftp:ssl-force true
+          set ftp:ssl-protect-data true
+          set ssl:verify-certificate no
+          set net:max-retries 3
+          set net:timeout 20
+          open -u "$FTP_USER","$FTP_PASSWORD" "$FTP_HOST"
+          mirror --reverse --delete --verbose --parallel=4 dist "$DEPLOY_PATH/dist"
+          bye
+          EOF
+          lftp -f /tmp/deploy.lftp
+
+      - name: Reiniciar o app Node (Passenger)
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+        run: |
+          set -euo pipefail
+
+          # O cPanel usa Phusion Passenger: alterar tmp/restart.txt faz o app
+          # recarregar na próxima requisição, sem precisar abrir o painel.
+          date -u +"restart %Y-%m-%dT%H:%M:%SZ" > restart.txt
+
+          cat > /tmp/restart.lftp <<EOF
+          set ftp:ssl-force true
+          set ftp:ssl-protect-data true
+          set ssl:verify-certificate no
+          open -u "$FTP_USER","$FTP_PASSWORD" "$FTP_HOST"
+          mkdir -f "$DEPLOY_PATH/tmp"
+          put restart.txt -o "$DEPLOY_PATH/tmp/restart.txt"
+          bye
+          EOF
+          lftp -f /tmp/restart.lftp
+
+          echo "Deploy concluído. Se o app não recarregar sozinho, use Restart em Setup Node.js App."
