@@ -69,6 +69,12 @@ jobs:
             fi
           done
 
+          # Normaliza o caminho: tira a barra final e aceita "/" (quando a conta
+          # de FTP já aponta direto para a raiz do app).
+          DEPLOY_PATH="${DEPLOY_PATH%/}"
+          [ -z "$DEPLOY_PATH" ] && DEPLOY_PATH="."
+          echo "Destino no servidor: $DEPLOY_PATH/dist"
+
           # Trava de segurança: só envia se o destino já for um dist válido no servidor.
           # Isso impede que um DEPLOY_PATH errado apague a pasta errada.
           cat > /tmp/check.lftp <<EOF
@@ -107,6 +113,9 @@ jobs:
           DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
         run: |
           set -euo pipefail
+
+          DEPLOY_PATH="${DEPLOY_PATH%/}"
+          [ -z "$DEPLOY_PATH" ] && DEPLOY_PATH="."
 
           # O cPanel usa Phusion Passenger: alterar tmp/restart.txt faz o app
           # recarregar na próxima requisição, sem precisar abrir o painel.

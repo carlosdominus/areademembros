@@ -16,8 +16,17 @@ Em **Settings → Secrets and variables → Actions → aba Secrets → New repo
 | `FTP_USER`     | Usuário de FTP                                               |
 | `FTP_PASSWORD` | Senha desse usuário                                          |
 
-Vale criar uma conta de FTP separada no cPanel (**Files → FTP Accounts**) com
-acesso só à pasta do app, em vez de usar a conta principal do cPanel.
+Crie uma conta de FTP separada em **Arquivos → Contas de FTP**, com acesso
+só à pasta do app, em vez de usar a conta principal do cPanel:
+
+1. **Login:** `deploy` (vira `deploy@seudominio.com`, que é o `FTP_USER`).
+2. **Diretório:** troque o valor sugerido pelo caminho do *Application Root*
+   do app Node. Esse campo é o que limita o alcance da conta.
+3. **Senha:** gere uma forte e guarde no gerenciador de senhas.
+4. Depois de criar, clique em **Configurar cliente FTP** na linha da conta:
+   o campo *Servidor FTP* é o `FTP_HOST`.
+
+Com a conta apontando direto para a raiz do app, `DEPLOY_PATH` é só `/`.
 
 ### 2. Variável
 
@@ -27,9 +36,15 @@ Na mesma tela, aba **Variables → New repository variable**:
 |---------------|---------------------------------------------------------------|
 | `DEPLOY_PATH` | Caminho da raiz do app no servidor, visto pelo usuário de FTP |
 
-É a pasta que **contém** o `dist` — a mesma que aparece em *Application Root*
-no **Setup Node.js App** do cPanel. Exemplos: `/membros`, `/areademembros`,
-`/public_html/membros`. Sem barra no final.
+É a pasta que **contém** o `dist`, **vista pelo usuário de FTP** (e não o
+caminho absoluto do servidor).
+
+- Se a conta de FTP foi criada apontando direto para a raiz do app (o
+  recomendado), o valor é só `/`.
+- Se a conta de FTP enxerga a home inteira, use o caminho a partir dela:
+  `/membros`, `/areademembros`, `/public_html/membros`.
+
+A pasta certa é a que aparece em *Application Root* no **Setup Node.js App**.
 
 Se o caminho estiver errado, o deploy para com erro antes de enviar qualquer
 arquivo — existe uma trava que confere se `DEPLOY_PATH/dist/index.html` já
