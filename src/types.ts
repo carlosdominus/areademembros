@@ -22,6 +22,7 @@ export interface Modulo {
   ordem: number;
   titulo: string;
   capaUrl?: string;
+  mapaMentalUrl?: string;
   publicado: boolean;
   bloqueado?: boolean;
   aulas: Aula[];

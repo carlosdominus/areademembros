@@ -106,6 +106,7 @@ export async function loadCourseData(uid: string): Promise<Modulo[]> {
             ordem: ordem,
             titulo: data.titulo || 'Módulo Sem Título',
             capaUrl: capaUrl,
+            mapaMentalUrl: data.mapaMentalUrl || undefined,
             publicado: data.publicado ?? true,
             bloqueado: isBloqueado,
             aulas: []
@@ -169,6 +170,8 @@ export async function loadCourseData(uid: string): Promise<Modulo[]> {
         ...m,
         titulo: mockMod?.titulo || m.titulo,
         capaUrl: capaUrl,
+        // O link do mapa mental do catálogo local tem prioridade; o Firestore serve de complemento
+        mapaMentalUrl: mockMod?.mapaMentalUrl || m.mapaMentalUrl,
         aulas: []
       });
     });

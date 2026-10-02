@@ -7,6 +7,7 @@ export const modulosIniciaisMock: Modulo[] = [
     ordem: 0,
     titulo: '0. Apresentação',
     capaUrl: 'https://membros.dominus.site/images/m1_converted.webp?v=2',
+    mapaMentalUrl: 'https://mm.tt/map/4058967304?t=DdSrGTCUPi',
     publicado: true,
     bloqueado: false,
     aulas: [
@@ -29,6 +30,7 @@ export const modulosIniciaisMock: Modulo[] = [
     ordem: 1,
     titulo: '1. Spy/Espionagem',
     capaUrl: 'https://membros.dominus.site/images/m2_converted.webp?v=2',
+    mapaMentalUrl: 'https://mm.tt/map/4058963977?t=5Jtdtbsh1u',
     publicado: true,
     bloqueado: false,
     aulas: [
@@ -111,6 +113,7 @@ export const modulosIniciaisMock: Modulo[] = [
     ordem: 2,
     titulo: '2. Copywriting',
     capaUrl: 'https://membros.dominus.site/images/m3_converted.webp?v=2',
+    mapaMentalUrl: 'https://mm.tt/map/4059717189?t=0LPGKnBTCE',
     publicado: true,
     bloqueado: false,
     aulas: [
@@ -196,6 +199,7 @@ export const modulosIniciaisMock: Modulo[] = [
     ordem: 3,
     titulo: '3. Edição de vídeo',
     capaUrl: 'https://membros.dominus.site/images/m4_converted.webp?v=2',
+    mapaMentalUrl: 'https://mm.tt/map/4094674389?t=ClMkMYZ2Fi',
     publicado: true,
     bloqueado: true,
     aulas: [
@@ -246,6 +250,7 @@ export const modulosIniciaisMock: Modulo[] = [
     ordem: 4,
     titulo: '4. Estrutura',
     capaUrl: 'https://membros.dominus.site/images/m5_converted.webp?v=2',
+    mapaMentalUrl: 'https://mm.tt/map/4094648162?t=ysFVNg2dWB',
     publicado: true,
     bloqueado: true,
     aulas: [

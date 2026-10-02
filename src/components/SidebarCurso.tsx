@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X, ChevronDown, Check, Lock } from 'lucide-react';
+import { X, ChevronDown, Check, Lock, Network, ExternalLink } from 'lucide-react';
 import { Modulo } from '../types';
 import { CardModulo } from './CardModulo';
 
@@ -144,6 +144,23 @@ export const SidebarCurso: React.FC<SidebarCursoProps> = ({
               if (onCloseMobile) onCloseMobile();
             }}
           />
+        )}
+
+        {/* Mapa mental do módulo atual (abre em nova aba) */}
+        {moduloAtual?.mapaMentalUrl && (
+          <a
+            href={moduloAtual.mapaMentalUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={`Abrir o mapa mental do módulo ${moduloAtual.titulo}`}
+            className="w-full mt-3 btn-vidro h-[44px] px-3.5 flex items-center justify-between gap-2 text-[#EDF4EB] font-['Inter_Tight',sans-serif] font-medium text-[13.5px] cursor-pointer hover:border-[#41F20A]/50 transition-all group"
+          >
+            <span className="flex items-center gap-2 truncate group-hover:text-[#41F20A] transition-colors">
+              <Network className="w-4 h-4 text-[#41F20A] shrink-0" />
+              Acessar Mapa Mental
+            </span>
+            <ExternalLink className="w-3.5 h-3.5 text-[#A7B7A4] shrink-0 group-hover:text-[#41F20A] transition-colors" />
+          </a>
         )}
 
         {/* Botão para ver todos os módulos no grid / Homepage */}
