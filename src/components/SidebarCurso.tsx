@@ -92,7 +92,9 @@ export const SidebarCurso: React.FC<SidebarCursoProps> = ({
 
           {/* Menu Dropdown Estilizado */}
           {isDropdownOpen && (
-            <div className="absolute left-0 right-0 top-[calc(100%+6px)] vidro rounded-[14px] p-2 shadow-2xl z-50 max-h-[260px] overflow-y-auto scrollbar-thin">
+            // O menu fica no fluxo, logo abaixo do seletor: como o .vidro é
+            // translúcido, sobrepor o conteúdo deixaria os dois ilegíveis.
+            <div className="mt-[10px] vidro rounded-[14px] p-2 shadow-2xl z-50 max-h-[260px] overflow-y-auto scrollbar-thin">
               {modulos.map((m) => {
                 const isSelected = m.id === moduloAtualId;
                 const isBloqueado = m.bloqueado || (m.ordem !== undefined && m.ordem >= 3);
@@ -138,7 +140,6 @@ export const SidebarCurso: React.FC<SidebarCursoProps> = ({
             modulo={moduloAtual}
             isOpen={true}
             aulaAtualId={aulaAtualId}
-            onToggleAccordion={() => {}}
             onSelectAula={(aulaId) => {
               onSelectAula(aulaId);
               if (onCloseMobile) onCloseMobile();

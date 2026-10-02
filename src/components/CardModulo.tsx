@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import { Modulo } from '../types';
 import { ItemAula } from './ItemAula';
 
@@ -7,7 +7,6 @@ interface CardModuloProps {
   modulo: Modulo;
   isOpen: boolean;
   aulaAtualId: string;
-  onToggleAccordion: (moduloId: string) => void;
   onSelectAula: (aulaId: string) => void;
 }
 
@@ -15,19 +14,14 @@ export const CardModulo: React.FC<CardModuloProps> = ({
   modulo,
   isOpen,
   aulaAtualId,
-  onToggleAccordion,
   onSelectAula
 }) => {
   const todasConcluidas = modulo.aulas.length > 0 && modulo.aulas.every((a) => a.concluida);
 
   return (
     <div className="vidro rounded-[20px] overflow-hidden transition-all duration-150">
-      {/* Cabeçalho de cada módulo (linha clicável, expande/colapsa) */}
-      <button
-        onClick={() => onToggleAccordion(modulo.id)}
-        className="w-full min-h-[56px] p-4 text-left flex items-center justify-between gap-3 hover:bg-white/[0.03] transition-colors cursor-pointer focus-visible:outline-none"
-        aria-expanded={isOpen}
-      >
+      {/* Cabeçalho de cada módulo (apenas identificação, não expande/colapsa) */}
+      <div className="w-full min-h-[56px] p-4 text-left flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           {/* Badge numerado à esquerda: rgba(65,242,10,0.08), texto #41F20A font-bold */}
           <div className="w-[32px] h-[32px] rounded-[10px] bg-[rgba(65,242,10,0.08)] border border-[rgba(65,242,10,0.22)] text-[#41F20A] font-bold text-[14px] font-['Inter_Tight',sans-serif] flex items-center justify-center shrink-0">
@@ -54,16 +48,7 @@ export const CardModulo: React.FC<CardModuloProps> = ({
             </p>
           </div>
         </div>
-
-        {/* Ícone de seta (chevron) na extremidade direita */}
-        <div className="text-[#A7B7A4] shrink-0">
-          {isOpen ? (
-            <ChevronDown className="w-5 h-5 text-[#41F20A]" />
-          ) : (
-            <ChevronRight className="w-5 h-5 text-[#A7B7A4]" />
-          )}
-        </div>
-      </button>
+      </div>
 
       {/* Módulo expandido: sub-lista indentada das aulas */}
       {isOpen && (
