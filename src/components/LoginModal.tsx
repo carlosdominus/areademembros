@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'motion/react';
 import { signInWithPassword, resetUserPassword, checkIsMagicLink, completeMagicLinkSignIn } from '../lib/authService';
+import { DominusWaveLoader } from './DominusWaveLoader';
 
 interface LoginModalProps {
   onLoginSuccess: () => void;
   initialErrorMessage?: string | null;
+  isLoadingMode?: boolean;
 }
 
 const AJUSTES = {
@@ -131,7 +134,8 @@ void main(){
 
 export const LoginModal: React.FC<LoginModalProps> = ({
   onLoginSuccess,
-  initialErrorMessage
+  initialErrorMessage,
+  isLoadingMode = false
 }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -701,111 +705,122 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             <em>Veio operar.</em>
           </h1>
 
-          <section
-            className="card"
-            ref={cardRef}
-            onPointerMove={handlePointerMoveCard}
-          >
-            <div className="card-label">
-              <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <rect x="3" y="11" width="18" height="11" rx="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
-              Área de membros
-            </div>
-
-            {aviso.show && (
-              <div className={`aviso ${aviso.isOk ? 'ok' : ''}`} role="alert">
+          {isLoadingMode ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.94 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="flex flex-col items-center justify-center pt-2 pb-6"
+            >
+              <DominusWaveLoader size={84} color="#FFFFFF" amplitude={22} speed={3.6} />
+            </motion.div>
+          ) : (
+            <section
+              className="card"
+              ref={cardRef}
+              onPointerMove={handlePointerMoveCard}
+            >
+              <div className="card-label">
                 <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  {aviso.isOk ? (
-                    <>
-                      <path d="M22 11.1V12a10 10 0 1 1-5.9-9.1" />
-                      <path d="m9 11 3 3L22 4" />
-                    </>
-                  ) : (
-                    <>
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="M12 8v5" />
-                      <path d="M12 16h.01" />
-                    </>
-                  )}
+                  <rect x="3" y="11" width="18" height="11" rx="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                 </svg>
-                <div>
-                  <strong>{aviso.title}</strong>
-                  <span>{aviso.text}</span>
-                  {aviso.code && <code>{aviso.code}</code>}
-                </div>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} noValidate>
-              <div className="campo">
-                <div className="linha-label">
-                  <label htmlFor="email">Seu e-mail</label>
-                </div>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  ref={emailRef}
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    if (aviso.show) setAviso((prev) => ({ ...prev, show: false }));
-                  }}
-                  placeholder="seu@email.com"
-                  autoComplete="email"
-                  required
-                  spellCheck="false"
-                  disabled={loading}
-                />
+                Área de membros
               </div>
 
-              <div className="campo">
-                <div className="linha-label">
-                  <label htmlFor="senha">Senha</label>
-                  <button
-                    type="button"
-                    className="esqueci"
-                    onClick={handleForgotPassword}
-                    disabled={loading}
-                  >
-                    Esqueceu a senha?
-                  </button>
+              {aviso.show && (
+                <div className={`aviso ${aviso.isOk ? 'ok' : ''}`} role="alert">
+                  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    {aviso.isOk ? (
+                      <>
+                        <path d="M22 11.1V12a10 10 0 1 1-5.9-9.1" />
+                        <path d="m9 11 3 3L22 4" />
+                      </>
+                    ) : (
+                      <>
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 8v5" />
+                        <path d="M12 16h.01" />
+                      </>
+                    )}
+                  </svg>
+                  <div>
+                    <strong>{aviso.title}</strong>
+                    <span>{aviso.text}</span>
+                    {aviso.code && <code>{aviso.code}</code>}
+                  </div>
                 </div>
-                <div className="wrap-senha">
+              )}
+
+              <form onSubmit={handleSubmit} noValidate>
+                <div className="campo">
+                  <div className="linha-label">
+                    <label htmlFor="email">Seu e-mail</label>
+                  </div>
                   <input
-                    type={showPassword ? 'text' : 'password'}
-                    id="senha"
-                    name="senha"
-                    value={password}
+                    type="email"
+                    id="email"
+                    name="email"
+                    ref={emailRef}
+                    value={email}
                     onChange={(e) => {
-                      setPassword(e.target.value);
+                      setEmail(e.target.value);
                       if (aviso.show) setAviso((prev) => ({ ...prev, show: false }));
                     }}
-                    placeholder="••••••••"
-                    autoComplete="current-password"
+                    placeholder="seu@email.com"
+                    autoComplete="email"
                     required
+                    spellCheck="false"
                     disabled={loading}
                   />
-                  <button
-                    type="button"
-                    className="ver-senha"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? 'Esconder senha' : 'Mostrar senha'}
-                  >
-                    {showPassword ? 'esconder' : 'mostrar'}
-                  </button>
                 </div>
-              </div>
 
-              <button type="submit" className="cta" disabled={loading}>
-                {loading ? 'Entrando…' : 'Entrar'}
-              </button>
-            </form>
+                <div className="campo">
+                  <div className="linha-label">
+                    <label htmlFor="senha">Senha</label>
+                    <button
+                      type="button"
+                      className="esqueci"
+                      onClick={handleForgotPassword}
+                      disabled={loading}
+                    >
+                      Esqueceu a senha?
+                    </button>
+                  </div>
+                  <div className="wrap-senha">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      id="senha"
+                      name="senha"
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (aviso.show) setAviso((prev) => ({ ...prev, show: false }));
+                      }}
+                      placeholder="••••••••"
+                      autoComplete="current-password"
+                      required
+                      disabled={loading}
+                    />
+                    <button
+                      type="button"
+                      className="ver-senha"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? 'Esconder senha' : 'Mostrar senha'}
+                    >
+                      {showPassword ? 'esconder' : 'mostrar'}
+                    </button>
+                  </div>
+                </div>
 
-            <p className="hint">Use o e-mail que você cadastrou na compra.</p>
-          </section>
+                <button type="submit" className="cta" disabled={loading}>
+                  {loading ? 'Entrando…' : 'Entrar'}
+                </button>
+              </form>
+
+              <p className="hint">Use o e-mail que você cadastrou na compra.</p>
+            </section>
+          )}
         </main>
       </div>
     </>

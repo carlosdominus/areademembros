@@ -47,7 +47,7 @@ export const ItemAula: React.FC<ItemAulaProps> = ({
 
       {/* Duração / Status */}
       {aula.emBreve ? (
-        <span className="text-[10px] text-[#41F20A] font-semibold px-2 py-0.5 rounded-full bg-[rgba(65,242,10,0.12)] border border-[rgba(65,242,10,0.25)] shrink-0">
+        <span className="text-[10.5px] text-[#A7B7A4] font-medium px-2 py-0.5 rounded-[6px] bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] shrink-0">
           Em breve
         </span>
       ) : aula.duracaoMin ? (

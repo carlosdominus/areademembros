@@ -70,7 +70,7 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
   }, [modulos, updateScrollState]);
 
   // Calculate total course stats (apenas dos módulos disponíveis)
-  const modulosDisponiveis = modulos.filter((m) => !m.bloqueado && m.ordem <= 3);
+  const modulosDisponiveis = modulos.filter((m) => !m.bloqueado && (m.ordem === undefined || m.ordem < 3));
   const totalAulas = modulosDisponiveis.reduce((acc, m) => acc + m.aulas.length, 0);
   const aulasConcluidas = modulosDisponiveis.reduce(
     (acc, m) => acc + m.aulas.filter((a) => a.concluida).length,
@@ -129,7 +129,7 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
   };
 
   const handleCardClick = (modulo: Modulo) => {
-    const isBloqueado = modulo.bloqueado || modulo.ordem > 3;
+    const isBloqueado = modulo.bloqueado || (modulo.ordem !== undefined && modulo.ordem >= 3);
     if (isBloqueado) {
       setLockedToast(`${modulo.titulo}: este módulo será liberado em breve!`);
       setTimeout(() => {
@@ -168,15 +168,27 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
       )}
 
       {/* Top Header: Title + Overall Progress + Navigation Controls */}
-      <div className="pb-3 border-b border-[rgba(255,255,255,0.08)] space-y-2">
-        {/* Linha 1: Título e Progresso Geral (Desktop) */}
-        <div className="flex items-center justify-between gap-4">
-          <h1 className="font-display text-[22px] sm:text-[28px] text-[#EDF4EB]">
+      <div className="pb-2.5 sm:pb-3 border-b border-[rgba(255,255,255,0.08)]">
+        {/* Linha 1: Título na esquerda & (Mobile: Badge 1/7 com largura exata de 72px / Desktop: Progresso Geral) */}
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="font-display text-[21px] sm:text-[28px] text-[#EDF4EB] tracking-tight leading-none">
             Módulos do Curso
           </h1>
-          <div className="text-right hidden md:block font-['Inter_Tight',sans-serif]">
+
+          {/* Mobile: Marcador 1/7 alinhado no topo e com largura exata das duas setas (72px) */}
+          <div
+            className="flex sm:hidden w-[72px] h-[28px] rounded-[8px] bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.1)] text-[#D9E4D6] font-['Inter_Tight',sans-serif] text-[12px] font-semibold items-center justify-center gap-1 shadow-sm select-none shrink-0"
+            title={`Exibindo até o módulo ${visibleEndIndex} de ${modulos.length}`}
+          >
+            <span className="text-[#41F20A] font-bold">{visibleEndIndex}</span>
+            <span className="text-[#A7B7A4]">/</span>
+            <span className="text-[#EDF4EB]">{modulos.length}</span>
+          </div>
+
+          {/* Desktop: Progresso Geral */}
+          <div className="text-right hidden sm:block font-['Inter_Tight',sans-serif]">
             <span className="text-[12.5px] font-semibold text-[#D9E4D6] block">
-              Progresso (Módulos 1 a 3): <strong className="text-[#41F20A] font-bold">{progressoGeral}%</strong>
+              Progresso Geral: <strong className="text-[#41F20A] font-bold">{progressoGeral}%</strong>
             </span>
             <span className="text-[12px] text-[#A7B7A4]">
               {aulasConcluidas} de {totalAulas} aulas concluídas
@@ -184,17 +196,17 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
           </div>
         </div>
 
-        {/* Linha 2: Subtítulo em 2 linhas no mobile + Controles alinhados ao lado */}
-        <div className="flex items-center justify-between gap-3 pt-0.5">
-          <p className="font-['Inter_Tight',sans-serif] font-normal text-[13px] sm:text-[13.5px] text-[#A7B7A4] leading-snug">
+        {/* Linha 2: Subtítulo na esquerda & Controles de navegação na direita */}
+        <div className="flex items-center justify-between gap-3 pt-1.5 sm:pt-2">
+          <p className="font-['Inter_Tight',sans-serif] font-normal text-[12.5px] sm:text-[13.5px] text-[#A7B7A4] leading-snug">
             <span className="block sm:inline">Deslize para ver todos os módulos</span>{' '}
             <span className="block sm:inline">e selecionar o conteúdo</span>
           </p>
 
           <div className="flex items-center gap-2 shrink-0">
-            {/* Marcador de Módulos (ex: 4 / 7) */}
+            {/* Desktop: Marcador de Módulos (ex: 1 / 7) */}
             <div
-              className="px-2.5 sm:px-3 py-1.5 rounded-[10px] bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.1)] text-[#D9E4D6] font-['Inter_Tight',sans-serif] text-[12px] sm:text-[13px] font-semibold flex items-center gap-1 shadow-sm select-none"
+              className="hidden sm:flex px-3 py-1.5 rounded-[10px] bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.1)] text-[#D9E4D6] font-['Inter_Tight',sans-serif] text-[13px] font-semibold items-center justify-center gap-1 shadow-sm select-none"
               title={`Exibindo até o módulo ${visibleEndIndex} de ${modulos.length}`}
             >
               <span className="text-[#41F20A] font-bold">{visibleEndIndex}</span>
@@ -202,11 +214,12 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
               <span className="text-[#EDF4EB]">{modulos.length}</span>
             </div>
 
-            <div className="flex items-center gap-1.5">
+            {/* Setas de Navegação: largura de 72px no mobile (32px + 8px gap + 32px) */}
+            <div className="flex items-center gap-2 w-[72px] sm:w-auto justify-between">
               <button
                 onClick={() => scroll('left')}
                 disabled={!canScrollLeft}
-                className={`w-[34px] h-[34px] sm:w-[38px] sm:h-[38px] rounded-[10px] bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.11)] flex items-center justify-center transition-all cursor-pointer active:scale-95 shadow-sm ${
+                className={`w-[32px] h-[32px] sm:w-[38px] sm:h-[38px] rounded-[9px] sm:rounded-[10px] bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.11)] flex items-center justify-center transition-all cursor-pointer active:scale-95 shadow-sm ${
                   !canScrollLeft
                     ? 'opacity-30 cursor-not-allowed text-[#A7B7A4]'
                     : 'hover:border-[#41F20A]/50 text-[#EDF4EB] hover:text-[#41F20A]'
@@ -219,7 +232,7 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
               <button
                 onClick={() => scroll('right')}
                 disabled={!canScrollRight}
-                className={`w-[34px] h-[34px] sm:w-[38px] sm:h-[38px] rounded-[10px] bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.11)] flex items-center justify-center transition-all cursor-pointer active:scale-95 shadow-sm ${
+                className={`w-[32px] h-[32px] sm:w-[38px] sm:h-[38px] rounded-[9px] sm:rounded-[10px] bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.11)] flex items-center justify-center transition-all cursor-pointer active:scale-95 shadow-sm ${
                   !canScrollRight
                     ? 'opacity-30 cursor-not-allowed text-[#A7B7A4]'
                     : 'hover:border-[#41F20A]/50 text-[#EDF4EB] hover:text-[#41F20A]'
@@ -245,7 +258,7 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
           }}
         >
           {modulos.map((modulo) => {
-            const isBloqueado = modulo.bloqueado || modulo.ordem > 3;
+            const isBloqueado = modulo.bloqueado || (modulo.ordem !== undefined && modulo.ordem >= 3);
             const totalM = modulo.aulas.length;
             const concluidasM = modulo.aulas.filter((a) => a.concluida).length;
             const pctM = totalM > 0 ? Math.round((concluidasM / totalM) * 100) : 0;
@@ -262,12 +275,12 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
                 {/* Vertical Poster Cover (3:4 aspect ratio) */}
                 <div className="capa bg-[#080D0A]">
                   <img
-                    src={modulo.capaUrl || `https://membros.dominus.site/images/m${modulo.ordem}_converted.webp`}
+                    src={modulo.capaUrl || `https://membros.dominus.site/images/m${modulo.ordem + 1}_converted.webp?v=2`}
                     alt={modulo.titulo}
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
-                      const fallback = `/images/m${modulo.ordem}_converted.webp`;
-                      if (target.src !== fallback && !target.src.endsWith(fallback)) {
+                      const fallback = `https://membros.dominus.site/images/m${modulo.ordem + 1}_converted.webp?v=2`;
+                      if (target.src !== fallback) {
                         target.src = fallback;
                       }
                     }}
@@ -283,9 +296,9 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
                       <span>Em breve</span>
                     </div>
                   ) : pctM === 100 ? (
-                    <div className="absolute top-3 right-3 bg-[#41F20A] text-[#062800] px-2.5 py-1 rounded-[6px] text-[10px] font-bold font-['Inter_Tight',sans-serif] flex items-center gap-1 shadow-md z-10 select-none">
-                      <CheckCircle2 className="w-3.5 h-3.5 stroke-[3]" />
-                      <span>CONCLUÍDO</span>
+                    <div className="absolute top-3 right-3 bg-[rgba(10,15,12,0.85)] border border-[rgba(255,255,255,0.15)] text-[#EDF4EB] px-2.5 py-1 rounded-[8px] text-[11px] font-medium font-['Inter_Tight',sans-serif] flex items-center gap-1.5 shadow-lg backdrop-blur-md z-10 select-none">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#A7B7A4]" />
+                      <span>Concluído</span>
                     </div>
                   ) : null}
 

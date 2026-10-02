@@ -3,16 +3,16 @@ export type { Modulo, Aula };
 
 export const modulosIniciaisMock: Modulo[] = [
   {
-    id: 'mod-1',
-    ordem: 1,
-    titulo: '1. Apresentação',
-    capaUrl: 'https://membros.dominus.site/images/m1_converted.webp',
+    id: 'mod-0',
+    ordem: 0,
+    titulo: '0. Apresentação',
+    capaUrl: 'https://membros.dominus.site/images/m1_converted.webp?v=2',
     publicado: true,
     bloqueado: false,
     aulas: [
       {
-        id: 'aula-1-1',
-        moduloId: 'mod-1',
+        id: 'aula-0-1',
+        moduloId: 'mod-0',
         ordem: 1,
         titulo: 'Apresentação do curso',
         descricao: 'Boas-vindas oficiais à mentoria, visão geral da jornada, estrutura do treinamento e alinhamento do método.',
@@ -25,16 +25,16 @@ export const modulosIniciaisMock: Modulo[] = [
     ]
   },
   {
-    id: 'mod-2',
-    ordem: 2,
-    titulo: '2. Spy/Espionagem',
-    capaUrl: 'https://membros.dominus.site/images/m2_converted.webp',
+    id: 'mod-1',
+    ordem: 1,
+    titulo: '1. Spy/Espionagem',
+    capaUrl: 'https://membros.dominus.site/images/m2_converted.webp?v=2',
     publicado: true,
     bloqueado: false,
     aulas: [
       {
-        id: 'aula-2-1',
-        moduloId: 'mod-2',
+        id: 'aula-1-1',
+        moduloId: 'mod-1',
         ordem: 1,
         titulo: '1. Nivel Ético e escolha de nicho',
         descricao: 'Diretrizes éticas e fundamentos essenciais para espionagem e modelagem de ofertas com inteligência e responsabilidade.',
@@ -45,8 +45,8 @@ export const modulosIniciaisMock: Modulo[] = [
         concluida: false
       },
       {
-        id: 'aula-2-2',
-        moduloId: 'mod-2',
+        id: 'aula-1-2',
+        moduloId: 'mod-1',
         ordem: 2,
         titulo: '2. Escolhendo ofertas vencedoras',
         descricao: 'Como minerar, filtrar e escolher as melhores ofertas validadas com alta conversão e potencial de escala imediata.',
@@ -57,8 +57,8 @@ export const modulosIniciaisMock: Modulo[] = [
         concluida: false
       },
       {
-        id: 'aula-2-3',
-        moduloId: 'mod-2',
+        id: 'aula-1-3',
+        moduloId: 'mod-1',
         ordem: 3,
         titulo: '3. Métodos de Espionagem',
         descricao: 'Ferramentas práticas e métodos avançados para mapear criativos, copys e páginas que mais vendem no mercado.',
@@ -69,8 +69,8 @@ export const modulosIniciaisMock: Modulo[] = [
         concluida: false
       },
       {
-        id: 'aula-2-4',
-        moduloId: 'mod-2',
+        id: 'aula-1-4',
+        moduloId: 'mod-1',
         ordem: 4,
         titulo: '4. Camuflagem',
         descricao: 'Técnicas de camuflagem e diferenciação para blindar sua esteira, proteger suas páginas e evitar saturação.',
@@ -81,8 +81,8 @@ export const modulosIniciaisMock: Modulo[] = [
         concluida: false
       },
       {
-        id: 'aula-2-5',
-        moduloId: 'mod-2',
+        id: 'aula-1-5',
+        moduloId: 'mod-1',
         ordem: 5,
         titulo: '5. Espionagem na prática',
         descricao: 'Execução prática de espionagem na tela: analisando concorrentes, dissecando páginas de vendas e estruturando o funil.',
@@ -93,8 +93,8 @@ export const modulosIniciaisMock: Modulo[] = [
         concluida: false
       },
       {
-        id: 'aula-2-6',
-        moduloId: 'mod-2',
+        id: 'aula-1-6',
+        moduloId: 'mod-1',
         ordem: 6,
         titulo: '6. Próximos passos',
         descricao: 'Orientações práticas de execução, checklist das etapas concluídas e direcionamento para a próxima fase.',
@@ -107,16 +107,16 @@ export const modulosIniciaisMock: Modulo[] = [
     ]
   },
   {
-    id: 'mod-3',
-    ordem: 3,
-    titulo: '3. Copywriting',
-    capaUrl: 'https://membros.dominus.site/images/m3_converted.webp',
+    id: 'mod-2',
+    ordem: 2,
+    titulo: '2. Copywriting',
+    capaUrl: 'https://membros.dominus.site/images/m3_converted.webp?v=2',
     publicado: true,
     bloqueado: false,
     aulas: [
       {
-        id: 'aula-3-1',
-        moduloId: 'mod-3',
+        id: 'aula-2-1',
+        moduloId: 'mod-2',
         ordem: 1,
         titulo: '1. Conceitos e termos básicos',
         descricao: 'A ciência por trás dos desejos humanos e gatilhos mentais que acionam a decisão imediata de compra.',
@@ -127,8 +127,8 @@ export const modulosIniciaisMock: Modulo[] = [
         concluida: false
       },
       {
-        id: 'aula-3-2',
-        moduloId: 'mod-3',
+        id: 'aula-2-2',
+        moduloId: 'mod-2',
         ordem: 2,
         titulo: '2. Modelagem de nutracêutico para info-produto',
         descricao: 'Estruturação passo a passo da narrativa de vendas: gancho, história, mecanismo único e oferta.',
@@ -139,8 +139,8 @@ export const modulosIniciaisMock: Modulo[] = [
         concluida: false
       },
       {
-        id: 'aula-3-3',
-        moduloId: 'mod-3',
+        id: 'aula-2-3',
+        moduloId: 'mod-2',
         ordem: 3,
         titulo: '3. Modelagem de idioma e mercado',
         descricao: 'Modelos práticos para criar títulos chamativos e desarmar as dúvidas do cliente antes do checkout.',
@@ -151,8 +151,8 @@ export const modulosIniciaisMock: Modulo[] = [
         concluida: false
       },
       {
-        id: 'aula-3-4',
-        moduloId: 'mod-3',
+        id: 'aula-2-4',
+        moduloId: 'mod-2',
         ordem: 4,
         titulo: '4. Modelando ofertas na prática.',
         descricao: 'Construção da oferta passo a passo na prática com exemplos e modelos validados.',
@@ -164,8 +164,8 @@ export const modulosIniciaisMock: Modulo[] = [
         concluida: false
       },
       {
-        id: 'aula-3-5',
-        moduloId: 'mod-3',
+        id: 'aula-2-5',
+        moduloId: 'mod-2',
         ordem: 5,
         titulo: '5. Copy para criativos.',
         descricao: 'Técnicas e roteiros para criar anúncios de alta conversão que prendem a atenção.',
@@ -177,8 +177,8 @@ export const modulosIniciaisMock: Modulo[] = [
         concluida: false
       },
       {
-        id: 'aula-3-6',
-        moduloId: 'mod-3',
+        id: 'aula-2-6',
+        moduloId: 'mod-2',
         ordem: 6,
         titulo: '6. Copy para VSL.',
         descricao: 'Estruturação completa de vídeos de vendas de alta escala para infoprodutos.',
@@ -192,16 +192,16 @@ export const modulosIniciaisMock: Modulo[] = [
     ]
   },
   {
-    id: 'mod-4',
-    ordem: 4,
-    titulo: '4. Edição de vídeo',
-    capaUrl: 'https://membros.dominus.site/images/m4_converted.webp',
+    id: 'mod-3',
+    ordem: 3,
+    titulo: '3. Edição de vídeo',
+    capaUrl: 'https://membros.dominus.site/images/m4_converted.webp?v=2',
     publicado: true,
     bloqueado: true,
     aulas: [
       {
-        id: 'aula-4-1',
-        moduloId: 'mod-4',
+        id: 'aula-3-1',
+        moduloId: 'mod-3',
         ordem: 1,
         titulo: 'Configuração do Software e Workflow Rápido',
         descricao: 'Aprenda a organizar seus projetos de vídeo para cortar e editar na metade do tempo.',
@@ -212,8 +212,8 @@ export const modulosIniciaisMock: Modulo[] = [
         concluida: false
       },
       {
-        id: 'aula-4-2',
-        moduloId: 'mod-4',
+        id: 'aula-3-2',
+        moduloId: 'mod-3',
         ordem: 2,
         titulo: 'Cortes Dinâmicos e Ganchos nos Primeiros 3 Segundos',
         descricao: 'Técnicas de edição focadas em manter a retenção máxima do usuário nas redes sociais.',
@@ -224,8 +224,8 @@ export const modulosIniciaisMock: Modulo[] = [
         concluida: false
       },
       {
-        id: 'aula-4-3',
-        moduloId: 'mod-4',
+        id: 'aula-3-3',
+        moduloId: 'mod-3',
         ordem: 3,
         titulo: 'Legendas Animadas, SFX e Efeitos de Impacto',
         descricao: 'Como aplicar efeitos sonoros e elementos visuais para destacar pontos-chave do seu anúncio.',
@@ -242,16 +242,16 @@ export const modulosIniciaisMock: Modulo[] = [
     ]
   },
   {
-    id: 'mod-5',
-    ordem: 5,
-    titulo: '5. Estrutura',
-    capaUrl: 'https://membros.dominus.site/images/m5_converted.webp',
+    id: 'mod-4',
+    ordem: 4,
+    titulo: '4. Estrutura',
+    capaUrl: 'https://membros.dominus.site/images/m5_converted.webp?v=2',
     publicado: true,
     bloqueado: true,
     aulas: [
       {
-        id: 'aula-5-1',
-        moduloId: 'mod-5',
+        id: 'aula-4-1',
+        moduloId: 'mod-4',
         ordem: 1,
         titulo: 'Construindo a Página de Vendas de Alta Velocidade',
         descricao: 'Layout limpo, carregamento ultrarrápido em mobile e otimização da experiência do usuário.',
@@ -262,8 +262,8 @@ export const modulosIniciaisMock: Modulo[] = [
         concluida: false
       },
       {
-        id: 'aula-5-2',
-        moduloId: 'mod-5',
+        id: 'aula-4-2',
+        moduloId: 'mod-4',
         ordem: 2,
         titulo: 'Integração de Checkout, Pix e Cartão',
         descricao: 'Configuração técnica dos meios de pagamento e recuperação de vendas via WhatsApp.',
@@ -274,8 +274,8 @@ export const modulosIniciaisMock: Modulo[] = [
         concluida: false
       },
       {
-        id: 'aula-5-3',
-        moduloId: 'mod-5',
+        id: 'aula-4-3',
+        moduloId: 'mod-4',
         ordem: 3,
         titulo: 'Domínios, Pixel de Rastreamento e Segurança',
         descricao: 'Instalação de scripts de métrica para garantir que seu tráfego meça todas as conversões.',
@@ -288,16 +288,16 @@ export const modulosIniciaisMock: Modulo[] = [
     ]
   },
   {
-    id: 'mod-6',
-    ordem: 6,
-    titulo: '6. Tráfego',
-    capaUrl: 'https://membros.dominus.site/images/m6_converted.webp',
+    id: 'mod-5',
+    ordem: 5,
+    titulo: '5. Tráfego',
+    capaUrl: 'https://membros.dominus.site/images/m6_converted.webp?v=2',
     publicado: true,
     bloqueado: true,
     aulas: [
       {
-        id: 'aula-6-1',
-        moduloId: 'mod-6',
+        id: 'aula-5-1',
+        moduloId: 'mod-5',
         ordem: 1,
         titulo: 'Estratégia de Campanhas e Estrutura de Testes',
         descricao: 'Como organizar conjuntos de anúncios para validar criativos e públicos com baixo orçamento.',
@@ -308,8 +308,8 @@ export const modulosIniciaisMock: Modulo[] = [
         concluida: false
       },
       {
-        id: 'aula-6-2',
-        moduloId: 'mod-6',
+        id: 'aula-5-2',
+        moduloId: 'mod-5',
         ordem: 2,
         titulo: 'Análise de Métricas: CPA, CTR, ROAS e CPM',
         descricao: 'Aprenda a ler o gerenciador de anúncios e tomar decisões baseadas em dados concretos.',
@@ -324,8 +324,8 @@ export const modulosIniciaisMock: Modulo[] = [
         }
       },
       {
-        id: 'aula-6-3',
-        moduloId: 'mod-6',
+        id: 'aula-5-3',
+        moduloId: 'mod-5',
         ordem: 3,
         titulo: 'Otimização e Escala Horizontal e Vertical',
         descricao: 'Como duplicar orçamento e expandir para novos públicos sem perder a lucratividade.',
@@ -338,16 +338,16 @@ export const modulosIniciaisMock: Modulo[] = [
     ]
   },
   {
-    id: 'mod-7',
-    ordem: 7,
-    titulo: '7. Gestão',
-    capaUrl: 'https://membros.dominus.site/images/m7_converted.webp',
+    id: 'mod-6',
+    ordem: 6,
+    titulo: '6. Gestão',
+    capaUrl: 'https://membros.dominus.site/images/m7_converted.webp?v=2',
     publicado: true,
     bloqueado: true,
     aulas: [
       {
-        id: 'aula-7-1',
-        moduloId: 'mod-7',
+        id: 'aula-6-1',
+        moduloId: 'mod-6',
         ordem: 1,
         titulo: 'Controle de Fluxo de Caixa e Margem Real',
         descricao: 'Como gerenciar receitas, custos de tráfego, impostos e taxas para manter a saúde financeira.',
@@ -362,8 +362,8 @@ export const modulosIniciaisMock: Modulo[] = [
         }
       },
       {
-        id: 'aula-7-2',
-        moduloId: 'mod-7',
+        id: 'aula-6-2',
+        moduloId: 'mod-6',
         ordem: 2,
         titulo: 'Suporte ao Cliente e LTV (Lifetime Value)',
         descricao: 'Estratégias para fidelizar clientes, reduzir reembolsos e vender produtos adicionais (upsell).',
@@ -374,8 +374,8 @@ export const modulosIniciaisMock: Modulo[] = [
         concluida: false
       },
       {
-        id: 'aula-7-3',
-        moduloId: 'mod-7',
+        id: 'aula-6-3',
+        moduloId: 'mod-6',
         ordem: 3,
         titulo: 'Organização de Processos e Formação de Equipe',
         descricao: 'Como delegar tarefas operacionais e focar exclusivamente no crescimento estratégico do negócio.',

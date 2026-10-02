@@ -25,16 +25,83 @@ export const AreaMembros: React.FC<AreaMembrosProps> = ({
   onLogout
 }) => {
   const [modulos, setModulos] = useState<Modulo[]>(initialModulos);
-  const [actionLoading, setActionLoading] = useState<boolean>(false);
+  const [savingLessonId, setSavingLessonId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'home' | 'lesson'>('home');
   const [moduloAtualId, setModuloAtualId] = useState<string>(() => initialModulos[0]?.id || '');
   const [aulaAtualId, setAulaAtualId] = useState<string>(() => initialModulos[0]?.aulas[0]?.id || '');
   const [isSidebarMobileOpen, setIsSidebarMobileOpen] = useState<boolean>(false);
 
-  // Sincroniza se os módulos mudarem externamente
+  // Sincroniza se os módulos mudarem externamente, preservando o progresso concluído
   React.useEffect(() => {
     if (initialModulos.length > 0) {
-      setModulos(initialModulos);
+      setModulos((prevModulos) => {
+        // Mapa de progresso do estado atual para não perder marcações
+        const estadoConcluidasMap = new Map<string, boolean>();
+        const estadoAvaliacaoMap = new Map<string, number | null>();
+        prevModulos.forEach((m) => {
+          m.aulas.forEach((a) => {
+            if (a.concluida) estadoConcluidasMap.set(a.id, true);
+            if (a.avaliacao) estadoAvaliacaoMap.set(a.id, a.avaliacao);
+          });
+        });
+
+        // Lê também do localStorage do usuário se existir, garantindo limpeza em aulas emBreve
+        try {
+          const raw = localStorage.getItem(`progresso_${user?.uid}`);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            let needsClean = false;
+            Object.keys(parsed).forEach((k) => {
+              if (parsed[k]?.concluida) estadoConcluidasMap.set(k, true);
+              if (parsed[k]?.avaliacao) estadoAvaliacaoMap.set(k, parsed[k].avaliacao);
+            });
+
+            // Remove qualquer marcação anterior em aulas que são "Em Breve"
+            initialModulos.forEach((m) => {
+              const isModBloqueado = m.bloqueado || (m.ordem !== undefined && m.ordem >= 3);
+              m.aulas.forEach((a) => {
+                if (a.emBreve || !a.vturbEmbedId || isModBloqueado) {
+                  estadoConcluidasMap.delete(a.id);
+                  estadoAvaliacaoMap.delete(a.id);
+                  if (parsed[a.id]) {
+                    delete parsed[a.id];
+                    needsClean = true;
+                  }
+                }
+              });
+            });
+
+            if (needsClean) {
+              localStorage.setItem(`progresso_${user?.uid}`, JSON.stringify(parsed));
+            }
+          }
+        } catch {
+          // ignore
+        }
+
+        return initialModulos.map((mod) => {
+          const isModBloqueado = mod.bloqueado || (mod.ordem !== undefined && mod.ordem >= 3);
+          return {
+            ...mod,
+            aulas: mod.aulas.map((aula) => {
+              const isEmBreve = aula.emBreve || !aula.vturbEmbedId || isModBloqueado;
+              if (isEmBreve) {
+                return {
+                  ...aula,
+                  concluida: false,
+                  avaliacao: null
+                };
+              }
+              return {
+                ...aula,
+                concluida: estadoConcluidasMap.get(aula.id) ?? aula.concluida ?? false,
+                avaliacao: estadoAvaliacaoMap.get(aula.id) ?? aula.avaliacao ?? null
+              };
+            })
+          };
+        });
+      });
+
       if (!moduloAtualId) {
         setModuloAtualId(initialModulos[0].id);
         if (initialModulos[0].aulas.length > 0 && !aulaAtualId) {
@@ -42,14 +109,14 @@ export const AreaMembros: React.FC<AreaMembrosProps> = ({
         }
       }
     }
-  }, [initialModulos]);
+  }, [initialModulos, user?.uid]);
 
   // Flatten de todas as aulas dos módulos desbloqueados
   const todasAulasFlat = useMemo(() => {
     const list: { modulo: Modulo; aula: Aula; indexGlobal: number }[] = [];
     let idx = 0;
     modulos.forEach((mod) => {
-      if (mod.bloqueado || mod.ordem > 3) return;
+      if (mod.bloqueado || (mod.ordem !== undefined && mod.ordem >= 3)) return;
       mod.aulas.forEach((aula) => {
         list.push({ modulo: mod, aula, indexGlobal: idx });
         idx++;
@@ -81,9 +148,7 @@ export const AreaMembros: React.FC<AreaMembrosProps> = ({
   };
 
   const handleProxima = () => {
-    if (aulaAtual && !aulaAtual.concluida) {
-      handleToggleConcluida();
-    }
+    // Não conclui automaticamente ao avançar; avança diretamente para a próxima aula
     if (temProxima) {
       const nextItem = todasAulasFlat[indexGlobalAtual + 1];
       setModuloAtualId(nextItem.modulo.id);
@@ -91,68 +156,61 @@ export const AreaMembros: React.FC<AreaMembrosProps> = ({
     }
   };
 
-  // Alteração com escrita otimista, timeout de 10s e rollback
+  // Marcação exclusiva através do botão com escrita otimista e isolamento por aula
   const handleToggleConcluida = async () => {
     if (!user || !aulaAtual) return;
-    if (aulaAtual.concluida) return;
 
-    const estadoAnterior = aulaAtual.concluida;
-    const novoEstado = true;
+    // Impede marcar conclusão em aulas "Em breve", sem vídeo ou em módulos bloqueados
+    const isEmBreve = aulaAtual.emBreve || !aulaAtual.vturbEmbedId || (moduloAtual?.ordem !== undefined && moduloAtual.ordem >= 3) || moduloAtual?.bloqueado;
+    if (isEmBreve) return;
 
-    // 1. Atualização Otimista no estado React
+    const targetAulaId = aulaAtual.id;
+    const targetModuloId = moduloAtual?.id;
+    const novoEstado = !aulaAtual.concluida;
+
+    // 1. Atualização Otimista imediata no estado React (alterna entre true e false)
     setModulos((prevModulos) =>
       prevModulos.map((mod) => {
-        if (mod.id !== moduloAtual?.id) return mod;
+        if (mod.id !== targetModuloId) return mod;
         return {
           ...mod,
           aulas: mod.aulas.map((a) => {
-            if (a.id !== aulaAtual.id) return a;
+            if (a.id !== targetAulaId) return a;
             return { ...a, concluida: novoEstado };
           })
         };
       })
     );
 
-    // 2. Persiste no Firestore com Promise.race de 10 segundos
-    setActionLoading(true);
+    // 2. Persiste no Firestore e cache isolando o loading desta aula
+    setSavingLessonId(targetAulaId);
     try {
-      await Promise.race([
-        updateLessonProgress(user.uid, aulaAtual.id, novoEstado, aulaAtual.avaliacao),
-        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 10000))
-      ]);
+      await updateLessonProgress(user.uid, targetAulaId, novoEstado, aulaAtual.avaliacao);
     } catch (err) {
-      console.error('Falha ao salvar progresso no banco. Revertendo...', err);
-      // Rollback
-      setModulos((prevModulos) =>
-        prevModulos.map((mod) => {
-          if (mod.id !== moduloAtual?.id) return mod;
-          return {
-            ...mod,
-            aulas: mod.aulas.map((a) => {
-              if (a.id !== aulaAtual.id) return a;
-              return { ...a, concluida: estadoAnterior };
-            })
-          };
-        })
-      );
+      console.error('Falha ao sincronizar progresso no banco:', err);
     } finally {
-      setActionLoading(false);
+      setSavingLessonId((current) => (current === targetAulaId ? null : current));
     }
   };
 
   const handleSetRating = async (rating: number) => {
     if (!user || !aulaAtual) return;
 
-    const ratingAnterior = aulaAtual.avaliacao;
+    // Não permite avaliação em aulas em breve
+    const isEmBreve = aulaAtual.emBreve || !aulaAtual.vturbEmbedId || (moduloAtual?.ordem !== undefined && moduloAtual.ordem >= 3) || moduloAtual?.bloqueado;
+    if (isEmBreve) return;
+
+    const targetAulaId = aulaAtual.id;
+    const targetModuloId = moduloAtual?.id;
 
     // 1. Atualização Otimista
     setModulos((prevModulos) =>
       prevModulos.map((mod) => {
-        if (mod.id !== moduloAtual?.id) return mod;
+        if (mod.id !== targetModuloId) return mod;
         return {
           ...mod,
           aulas: mod.aulas.map((a) => {
-            if (a.id !== aulaAtual.id) return a;
+            if (a.id !== targetAulaId) return a;
             return { ...a, avaliacao: rating };
           })
         };
@@ -161,28 +219,15 @@ export const AreaMembros: React.FC<AreaMembrosProps> = ({
 
     // 2. Persiste no Firestore
     try {
-      await updateLessonRating(user.uid, aulaAtual.id, rating);
+      await updateLessonRating(user.uid, targetAulaId, rating);
     } catch (err) {
-      console.error('Falha ao salvar avaliação. Revertendo...', err);
-      // Rollback
-      setModulos((prevModulos) =>
-        prevModulos.map((mod) => {
-          if (mod.id !== moduloAtual?.id) return mod;
-          return {
-            ...mod,
-            aulas: mod.aulas.map((a) => {
-              if (a.id !== aulaAtual.id) return a;
-              return { ...a, avaliacao: ratingAnterior };
-            })
-          };
-        })
-      );
+      console.error('Falha ao salvar avaliação:', err);
     }
   };
 
   const handleSelectModuloFromGrid = (modId: string) => {
     const targetModule = modulos.find((m) => m.id === modId);
-    if (!targetModule || targetModule.bloqueado || targetModule.ordem > 3) return;
+    if (!targetModule || targetModule.bloqueado || (targetModule.ordem !== undefined && targetModule.ordem >= 3)) return;
     if (targetModule.aulas.length > 0) {
       setModuloAtualId(modId);
       const firstUncompleted = targetModule.aulas.find((a) => !a.concluida);
@@ -193,7 +238,7 @@ export const AreaMembros: React.FC<AreaMembrosProps> = ({
 
   const handleSelectModuloFromSidebar = (modId: string) => {
     const targetModule = modulos.find((m) => m.id === modId);
-    if (!targetModule || targetModule.bloqueado || targetModule.ordem > 3) return;
+    if (!targetModule || targetModule.bloqueado || (targetModule.ordem !== undefined && targetModule.ordem >= 3)) return;
     if (targetModule.aulas.length > 0) {
       setModuloAtualId(modId);
       setAulaAtualId(targetModule.aulas[0].id);
@@ -216,7 +261,7 @@ export const AreaMembros: React.FC<AreaMembrosProps> = ({
       />
 
       {/* Corpo principal */}
-      <main className="w-full max-w-[1560px] mx-auto px-4 sm:px-8 lg:px-12 py-6 flex-1 relative z-10">
+      <main className="w-full max-w-[1560px] mx-auto px-4 sm:px-8 lg:px-12 pt-3.5 pb-6 sm:py-6 flex-1 relative z-10">
         {viewMode === 'home' ? (
           <ModuloGrid
             modulos={modulos}
@@ -240,7 +285,7 @@ export const AreaMembros: React.FC<AreaMembrosProps> = ({
 
             <div className="flex flex-col lg:flex-row gap-8 lg:gap-10 items-start">
               {/* Sidebar do Curso */}
-              <div className="w-full lg:w-[32%] shrink-0">
+              <div className="contents lg:block lg:w-[32%] shrink-0">
                 <SidebarCurso
                   modulos={modulos}
                   aulaAtualId={aulaAtualId}
@@ -256,7 +301,7 @@ export const AreaMembros: React.FC<AreaMembrosProps> = ({
 
               {/* Player + Informações da Aula */}
               <div className="w-full lg:w-[68%] flex-1 min-w-0">
-                <div className="mb-5">
+                <div className="mb-4 sm:mb-5">
                   <Player aula={aulaAtual} loading={dataLoading} />
                 </div>
 
@@ -282,7 +327,13 @@ export const AreaMembros: React.FC<AreaMembrosProps> = ({
                         avaliacao={aulaAtual.avaliacao || null}
                         onToggleConcluida={handleToggleConcluida}
                         onSetRating={handleSetRating}
-                        loading={actionLoading}
+                        loading={savingLessonId === aulaAtual.id}
+                        emBreve={Boolean(
+                          aulaAtual.emBreve ||
+                            !aulaAtual.vturbEmbedId ||
+                            (moduloAtual?.ordem !== undefined && moduloAtual.ordem >= 3) ||
+                            moduloAtual?.bloqueado
+                        )}
                       />
                     </div>
 

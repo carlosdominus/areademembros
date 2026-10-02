@@ -95,11 +95,11 @@ export async function loadCourseData(uid: string): Promise<Modulo[]> {
       snapModulosResult.value.forEach((docSnap) => {
         const data = docSnap.data();
         if (data.publicado !== false) {
-          const isBloqueado = data.bloqueado !== undefined ? data.bloqueado : ((data.ordem || 1) > 3);
-          const ordem = data.ordem || 1;
+          const isBloqueado = data.bloqueado !== undefined ? data.bloqueado : ((data.ordem ?? 0) >= 3);
+          const ordem = data.ordem !== undefined ? data.ordem : 0;
           const capaUrl = data.capaUrl && !data.capaUrl.includes('membros.dominus.site/images')
             ? data.capaUrl
-            : `/capas/m${ordem}.webp`;
+            : `https://membros.dominus.site/images/m${ordem + 1}_converted.webp?v=2`;
 
           modulosList.push({
             id: docSnap.id,
@@ -162,8 +162,8 @@ export async function loadCourseData(uid: string): Promise<Modulo[]> {
     // Inicializa os módulos garantindo capas válidas e ordem correta
     baseModulos.forEach((m) => {
       const mockMod = mockModulosMap.get(m.id);
-      const ordem = m.ordem || mockMod?.ordem || 1;
-      const capaUrl = `https://membros.dominus.site/images/m${ordem}_converted.webp`;
+      const ordem = m.ordem !== undefined ? m.ordem : (mockMod?.ordem ?? 0);
+      const capaUrl = mockMod?.capaUrl || `https://membros.dominus.site/images/m${ordem + 1}_converted.webp?v=2`;
 
       moduloMap.set(m.id, {
         ...m,
@@ -178,7 +178,7 @@ export async function loadCourseData(uid: string): Promise<Modulo[]> {
       if (!moduloMap.has(mockMod.id)) {
         moduloMap.set(mockMod.id, {
           ...mockMod,
-          capaUrl: `https://membros.dominus.site/images/m${mockMod.ordem}_converted.webp`,
+          capaUrl: mockMod.capaUrl || `https://membros.dominus.site/images/m${mockMod.ordem + 1}_converted.webp?v=2`,
           aulas: []
         });
       }
@@ -203,7 +203,10 @@ export async function loadCourseData(uid: string): Promise<Modulo[]> {
 
     // 3. Distribui as aulas nos módulos correspondentes aplicando o progresso do usuário
     todasAulasMap.forEach((aula) => {
-      const prog = progressoMap[aula.id];
+      const isModBloqueado = moduloMap.get(aula.moduloId)?.bloqueado || ((moduloMap.get(aula.moduloId)?.ordem ?? 0) >= 3);
+      const isEmBreve = aula.emBreve || !aula.vturbEmbedId || isModBloqueado;
+      const prog = isEmBreve ? null : progressoMap[aula.id];
+
       const aulaComProgresso: Aula = {
         ...aula,
         concluida: prog?.concluida ?? false,
@@ -269,7 +272,11 @@ export async function updateLessonProgress(
       dataToUpdate.avaliacao = avaliacao;
     }
 
-    await setDoc(docRef, dataToUpdate, { merge: true });
+    // Limite estrito de 1.8s para a gravação no Firestore para não travar a interface
+    await Promise.race([
+      setDoc(docRef, dataToUpdate, { merge: true }),
+      new Promise((resolve) => setTimeout(resolve, 1800))
+    ]);
   } catch (err) {
     console.warn('Erro ao sincronizar progresso no Firestore:', err);
   }
@@ -294,10 +301,13 @@ export async function updateLessonRating(
 
   try {
     const docRef = doc(db, 'progresso', uid, 'aulas', aulaId);
-    await setDoc(docRef, {
-      avaliacao,
-      atualizadoEm: serverTimestamp()
-    }, { merge: true });
+    await Promise.race([
+      setDoc(docRef, {
+        avaliacao,
+        atualizadoEm: serverTimestamp()
+      }, { merge: true }),
+      new Promise((resolve) => setTimeout(resolve, 1800))
+    ]);
   } catch (err) {
     console.warn('Erro ao salvar avaliação da aula no Firestore:', err);
   }

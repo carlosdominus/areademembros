@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useRef, useState } from 'react';
-import { Play, Clock, Maximize2, Minimize2 } from 'lucide-react';
+import { Play, Clock } from 'lucide-react';
 import { Aula } from '../types';
 
 interface PlayerProps {
@@ -9,6 +9,7 @@ interface PlayerProps {
 
 export const Player: React.FC<PlayerProps> = ({ aula, loading = false }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const mountRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Extrai o ID limpo do player VTurb e o ID da conta
@@ -27,26 +28,34 @@ export const Player: React.FC<PlayerProps> = ({ aula, loading = false }) => {
       return { accountId: scriptMatch[1], playerId: scriptMatch[2] };
     }
 
-    // Se vier vid-XXXXX
-    const vidMatch = rawId.match(/vid-([a-zA-Z0-9]+)/);
+    // Se vier vid-XXXXX ou vid_XXXXX
+    const vidMatch = rawId.match(/vid[-_]([a-zA-Z0-9]+)/);
     if (vidMatch) {
       return { playerId: vidMatch[1], accountId: defaultAccountId };
     }
 
-    const clean = rawId.replace(/^vid-/, '').trim();
+    const clean = rawId.replace(/^vid[-_]/, '').trim();
     return { playerId: clean || '', accountId: defaultAccountId };
   }, [aula?.vturbEmbedId]);
 
-  // Carrega o script do VTurb diretamente no DOM para habilitar Fullscreen nativo em Desktop e Mobile
+  // Carrega e monta o player nativo do VTurb diretamente no DOM
   useEffect(() => {
-    if (!playerId || isEmBreve) return;
+    if (!mountRef.current || !playerId || isEmBreve) return;
 
-    const scriptId = `vturb-script-${playerId}`;
+    const container = mountRef.current;
     
-    // Limpa script anterior se existir
-    const existing = document.getElementById(scriptId);
-    if (existing) {
-      existing.remove();
+    // Injeta a estrutura de tag do SmartPlayer do VTurb
+    container.innerHTML = `
+      <vturb-smartplayer id="vid-${playerId}" style="display: block; margin: 0 auto; width: 100%;">
+        <div class="vturb-player-placeholder" style="position: relative; width: 100%; padding: 56.25% 0 0; z-index: 0; background-color: black;"></div>
+      </vturb-smartplayer>
+    `;
+
+    // Injeta o script do VTurb para ativar o player nativo com controles e tela cheia
+    const scriptId = `scr-${playerId}`;
+    const oldScript = document.getElementById(scriptId);
+    if (oldScript) {
+      oldScript.remove();
     }
 
     const script = document.createElement('script');
@@ -55,7 +64,47 @@ export const Player: React.FC<PlayerProps> = ({ aula, loading = false }) => {
     script.async = true;
     document.head.appendChild(script);
 
+    // Escuta elementos de vídeo adicionados pelo VTurb para eventos de Fullscreen do iOS Safari
+    const attachVideoListeners = (videoEl: HTMLVideoElement) => {
+      const onBeginFs = () => {
+        setIsFullscreen(true);
+        document.body.classList.add('has-fullscreen-player');
+        document.documentElement.classList.add('has-fullscreen-player');
+      };
+      const onEndFs = () => {
+        setIsFullscreen(false);
+        document.body.classList.remove('has-fullscreen-player');
+        document.documentElement.classList.remove('has-fullscreen-player');
+      };
+
+      videoEl.addEventListener('webkitbeginfullscreen', onBeginFs);
+      videoEl.addEventListener('webkitendfullscreen', onEndFs);
+      videoEl.addEventListener('fullscreenchange', onBeginFs);
+
+      return () => {
+        videoEl.removeEventListener('webkitbeginfullscreen', onBeginFs);
+        videoEl.removeEventListener('webkitendfullscreen', onEndFs);
+        videoEl.removeEventListener('fullscreenchange', onBeginFs);
+      };
+    };
+
+    const cleanups: (() => void)[] = [];
+    const observer = new MutationObserver(() => {
+      const videos = container.querySelectorAll('video');
+      videos.forEach((video) => {
+        if (!(video as any).__fsBound) {
+          (video as any).__fsBound = true;
+          cleanups.push(attachVideoListeners(video));
+        }
+      });
+    });
+
+    observer.observe(container, { childList: true, subtree: true });
+
     return () => {
+      observer.disconnect();
+      cleanups.forEach((cleanup) => cleanup());
+      container.innerHTML = '';
       const s = document.getElementById(scriptId);
       if (s) {
         s.remove();
@@ -63,19 +112,21 @@ export const Player: React.FC<PlayerProps> = ({ aula, loading = false }) => {
     };
   }, [playerId, accountId, isEmBreve]);
 
-  // Monitora mudanças de Fullscreen no documento e força orientação horizontal (landscape) em telas mobile
+  // Monitora mudanças de Fullscreen no documento e sincroniza estado
   useEffect(() => {
     const handleFullscreenChange = async () => {
-      const activeFs = !!(
+      const isFs = !!(
         document.fullscreenElement ||
         (document as any).webkitFullscreenElement ||
         (document as any).mozFullScreenElement ||
         (document as any).msFullscreenElement
       );
-      setIsFullscreen(activeFs);
 
-      if (activeFs) {
-        // Tenta rotacionar o celular para o modo paisagem (horizontal)
+      setIsFullscreen(isFs);
+
+      if (isFs) {
+        document.body.classList.add('has-fullscreen-player');
+        document.documentElement.classList.add('has-fullscreen-player');
         try {
           if (screen.orientation && typeof (screen.orientation as any).lock === 'function') {
             await (screen.orientation as any).lock('landscape').catch(() => {});
@@ -83,27 +134,18 @@ export const Player: React.FC<PlayerProps> = ({ aula, loading = false }) => {
             (screen as any).lockOrientation('landscape');
           } else if ((screen as any).webkitLockOrientation) {
             (screen as any).webkitLockOrientation('landscape');
-          } else if ((screen as any).mozLockOrientation) {
-            (screen as any).mozLockOrientation('landscape');
-          } else if ((screen as any).msLockOrientation) {
-            (screen as any).msLockOrientation('landscape');
           }
         } catch {
-          // Ignorado caso o dispositivo/navegador não dê permissão
+          // Ignorado caso não permitido
         }
       } else {
-        // Desbloqueia orientação ao sair da tela cheia
+        document.body.classList.remove('has-fullscreen-player');
+        document.documentElement.classList.remove('has-fullscreen-player');
         try {
           if (screen.orientation && typeof (screen.orientation as any).unlock === 'function') {
             (screen.orientation as any).unlock();
           } else if ((screen as any).unlockOrientation) {
             (screen as any).unlockOrientation();
-          } else if ((screen as any).webkitUnlockOrientation) {
-            (screen as any).webkitUnlockOrientation();
-          } else if ((screen as any).mozUnlockOrientation) {
-            (screen as any).mozUnlockOrientation();
-          } else if ((screen as any).msUnlockOrientation) {
-            (screen as any).msUnlockOrientation();
           }
         } catch {
           // Ignorado
@@ -111,74 +153,41 @@ export const Player: React.FC<PlayerProps> = ({ aula, loading = false }) => {
       }
     };
 
+    const handleMessage = (event: MessageEvent) => {
+      try {
+        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+        if (data && (data.type === 'fullscreen' || data.event === 'fullscreen')) {
+          if (data.value === true || data.state === true) {
+            setIsFullscreen(true);
+            document.body.classList.add('has-fullscreen-player');
+            document.documentElement.classList.add('has-fullscreen-player');
+          } else if (data.value === false || data.state === false) {
+            setIsFullscreen(false);
+            document.body.classList.remove('has-fullscreen-player');
+            document.documentElement.classList.remove('has-fullscreen-player');
+          }
+        }
+      } catch {
+        // Ignorado
+      }
+    };
+
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
     document.addEventListener('mozfullscreenchange', handleFullscreenChange);
     document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+    window.addEventListener('message', handleMessage);
 
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
       document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
       document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
       document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+      window.removeEventListener('message', handleMessage);
+      document.body.classList.remove('has-fullscreen-player');
+      document.documentElement.classList.remove('has-fullscreen-player');
     };
   }, []);
-
-  // Função para alternar Fullscreen manualmente pelo botão do topo
-  const toggleFullscreen = async () => {
-    const target = containerRef.current;
-    if (!target) return;
-
-    const isFs = !!(
-      document.fullscreenElement ||
-      (document as any).webkitFullscreenElement ||
-      (document as any).mozFullScreenElement ||
-      (document as any).msFullscreenElement
-    );
-
-    if (!isFs) {
-      // 1. Suporte específico para iOS Safari (reprodução nativa no elemento video)
-      const video = target.querySelector('video');
-      if (video && (video as any).webkitEnterFullscreen && !(target as any).requestFullscreen) {
-        try {
-          (video as any).webkitEnterFullscreen();
-          return;
-        } catch {
-          // segue para a API padrão
-        }
-      }
-
-      // 2. Fullscreen API padrão
-      if (target.requestFullscreen) {
-        await target.requestFullscreen().catch(() => {});
-      } else if ((target as any).webkitRequestFullscreen) {
-        await (target as any).webkitRequestFullscreen();
-      } else if ((target as any).mozRequestFullScreen) {
-        await (target as any).mozRequestFullScreen();
-      } else if ((target as any).msRequestFullscreen) {
-        await (target as any).msRequestFullscreen();
-      }
-
-      // 3. Força rotação para paisagem no mobile
-      try {
-        if (screen.orientation && typeof (screen.orientation as any).lock === 'function') {
-          await (screen.orientation as any).lock('landscape').catch(() => {});
-        }
-      } catch {
-        // Ignorado
-      }
-    } else {
-      if (document.exitFullscreen) {
-        await document.exitFullscreen().catch(() => {});
-      } else if ((document as any).webkitExitFullscreen) {
-        await (document as any).webkitExitFullscreen();
-      } else if ((document as any).mozCancelFullScreen) {
-        await (document as any).mozCancelFullScreen();
-      } else if ((document as any).msExitFullscreen) {
-        await (document as any).msExitFullscreen();
-      }
-    }
-  };
 
   // Skeleton loading state
   if (loading || !aula) {
@@ -217,45 +226,18 @@ export const Player: React.FC<PlayerProps> = ({ aula, loading = false }) => {
     <div
       ref={containerRef}
       key={`${aula.id}-${playerId}`}
-      className="player-container relative w-full aspect-video rounded-[16px] sm:rounded-[20px] overflow-hidden bg-black border border-[rgba(255,255,255,0.09)] shadow-[0_16px_40px_-10px_rgba(0,0,0,0.85)] group select-none flex items-center justify-center"
+      className={`player-container relative w-full overflow-hidden bg-black border border-[rgba(255,255,255,0.09)] shadow-[0_16px_40px_-10px_rgba(0,0,0,0.85)] ${
+        isFullscreen ? 'is-fullscreen-forced' : 'rounded-[16px] sm:rounded-[20px]'
+      }`}
     >
-      <div id={`vid-${playerId}-wrapper`} className="w-full h-full relative flex items-center justify-center bg-black">
-        {React.createElement(
-          'vturb-smartplayer',
-          {
-            id: `vid-${playerId}`,
-            style: { display: 'block', margin: '0 auto', width: '100%', height: '100%' }
-          },
-          <div
-            className="vturb-player-placeholder"
-            style={{
-              position: 'relative',
-              width: '100%',
-              padding: '56.25% 0 0',
-              zIndex: 0,
-              backgroundColor: 'black'
-            }}
-          />
-        )}
-      </div>
-
-      {/* Botão de Tela Cheia / Rotação Horizontal */}
-      <button
-        onClick={toggleFullscreen}
-        type="button"
-        aria-label={isFullscreen ? 'Sair da tela cheia' : 'Tela cheia horizontal'}
-        className="absolute top-3 right-3 z-30 opacity-75 hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 bg-[rgba(0,0,0,0.7)] hover:bg-[rgba(0,0,0,0.95)] backdrop-blur-md text-white hover:text-[#41F20A] p-2 sm:p-2.5 rounded-xl border border-[rgba(255,255,255,0.18)] shadow-lg cursor-pointer flex items-center justify-center"
-        title={isFullscreen ? 'Sair da tela cheia' : 'Tela cheia (Modo horizontal)'}
-      >
-        {isFullscreen ? (
-          <Minimize2 className="w-4 h-4 text-[#41F20A]" />
-        ) : (
-          <Maximize2 className="w-4 h-4 text-white hover:text-[#41F20A]" />
-        )}
-      </button>
+      <div
+        ref={mountRef}
+        className="w-full relative bg-black flex items-center justify-center"
+      />
     </div>
   );
 };
+
 
 
 

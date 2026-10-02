@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { LogOut } from 'lucide-react';
+import { Logo } from './Logo';
 
 interface CabecalhoProps {
   nomePlataforma?: string;
@@ -57,17 +58,22 @@ export const Cabecalho: React.FC<CabecalhoProps> = ({
 
   return (
     <header className="vidro-header h-[64px] w-full px-4 sm:px-8 lg:px-10 flex items-center justify-between">
-      {/* Left: Monograma "D" + Texto "Área de Membros" */}
+      {/* Left: Logo Xadrez Branco + Texto "Área de Membros" */}
       <div className="flex items-center gap-3">
         <button
           onClick={onGoHome}
           className="flex items-center gap-3 group text-left cursor-pointer focus:outline-none"
         >
-          {/* Monograma D */}
-          <div className="marca">D</div>
+          {/* Logo Xadrez em Branco */}
+          <div className="flex items-center justify-center transition-transform group-hover:scale-105">
+            <Logo width={54} height={32} color="#FFFFFF" className="drop-shadow-[0_2px_8px_rgba(255,255,255,0.15)]" />
+          </div>
           
+          {/* Divisor vertical sutil */}
+          <div className="h-5 w-[1px] bg-[rgba(255,255,255,0.15)] hidden sm:block" />
+
           {/* Texto "Área de Membros" em Inter Tight 600, 15px, --texto */}
-          <span className="font-['Inter_Tight',sans-serif] font-semibold text-[15px] text-[#EDF4EB] tracking-tight truncate group-hover:text-[#41F20A] transition-colors">
+          <span className="font-['Inter_Tight',sans-serif] font-semibold text-[15px] text-[#EDF4EB] tracking-tight truncate group-hover:text-[#FFFFFF] transition-colors">
             {nomePlataforma}
           </span>
         </button>
