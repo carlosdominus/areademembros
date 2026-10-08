@@ -97,7 +97,7 @@ export const SidebarCurso: React.FC<SidebarCursoProps> = ({
             <div className="mt-[10px] vidro rounded-[14px] p-2 shadow-2xl z-50 max-h-[260px] overflow-y-auto scrollbar-thin">
               {modulos.map((m) => {
                 const isSelected = m.id === moduloAtualId;
-                const isBloqueado = m.bloqueado || (m.ordem !== undefined && m.ordem >= 3);
+                const isBloqueado = m.bloqueado || (m.ordem !== undefined && m.ordem >= 4);
                 return (
                   <button
                     key={m.id}
