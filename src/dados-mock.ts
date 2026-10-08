@@ -201,7 +201,7 @@ export const modulosIniciaisMock: Modulo[] = [
     capaUrl: 'https://membros.dominus.site/images/m4_converted.webp?v=2',
     mapaMentalUrl: 'https://mm.tt/map/4094674389?t=ClMkMYZ2Fi',
     publicado: true,
-    bloqueado: true,
+    bloqueado: false,
     aulas: [
       {
         id: 'aula-3-1',
@@ -210,7 +210,8 @@ export const modulosIniciaisMock: Modulo[] = [
         titulo: 'Configuração do Software e Workflow Rápido',
         descricao: 'Aprenda a organizar seus projetos de vídeo para cortar e editar na metade do tempo.',
         duracaoMin: 14,
-        vturbEmbedId: '',
+        vturbEmbedId: '6ac7a9f3344b39bd83bb004a',
+        proporcao: 2.3463,
         materialUrl: null,
         publicado: true,
         concluida: false

@@ -43,11 +43,16 @@ export const Player: React.FC<PlayerProps> = ({ aula, loading = false }) => {
     if (!mountRef.current || !playerId || isEmBreve) return;
 
     const container = mountRef.current;
-    
+
+    // Altura reservada antes do player carregar. Usa a proporção da própria
+    // aula para a caixa não mudar de tamanho quando o vídeo aparece.
+    const proporcao = aula?.proporcao && aula.proporcao > 0 ? aula.proporcao : 16 / 9;
+    const paddingTop = (100 / proporcao).toFixed(4);
+
     // Injeta a estrutura de tag do SmartPlayer do VTurb
     container.innerHTML = `
       <vturb-smartplayer id="vid-${playerId}" style="display: block; margin: 0 auto; width: 100%;">
-        <div class="vturb-player-placeholder" style="position: relative; width: 100%; padding: 56.25% 0 0; z-index: 0; background-color: black;"></div>
+        <div class="vturb-player-placeholder" style="position: relative; width: 100%; padding: ${paddingTop}% 0 0; z-index: 0; background-color: black;"></div>
       </vturb-smartplayer>
     `;
 
@@ -110,7 +115,7 @@ export const Player: React.FC<PlayerProps> = ({ aula, loading = false }) => {
         s.remove();
       }
     };
-  }, [playerId, accountId, isEmBreve]);
+  }, [playerId, accountId, isEmBreve, aula?.proporcao]);
 
   // Monitora mudanças de Fullscreen no documento e sincroniza estado
   useEffect(() => {

@@ -6,6 +6,8 @@ export interface Aula {
   descricao: string;
   duracaoMin: number;
   vturbEmbedId: string;
+  /** Proporção do vídeo (largura ÷ altura). Padrão 16/9 quando ausente. */
+  proporcao?: number;
   materialUrl: string | null;
   publicado: boolean;
   emBreve?: boolean;
