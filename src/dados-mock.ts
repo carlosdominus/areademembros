@@ -211,7 +211,6 @@ export const modulosIniciaisMock: Modulo[] = [
         descricao: 'Aprenda a organizar seus projetos de vídeo para cortar e editar na metade do tempo.',
         duracaoMin: 14,
         vturbEmbedId: '6ac7a9f3344b39bd83bb004a',
-        proporcao: 2.3463,
         materialUrl: null,
         publicado: true,
         concluida: false
@@ -220,10 +219,10 @@ export const modulosIniciaisMock: Modulo[] = [
         id: 'aula-3-2',
         moduloId: 'mod-3',
         ordem: 2,
-        titulo: 'Cortes Dinâmicos e Ganchos nos Primeiros 3 Segundos',
-        descricao: 'Técnicas de edição focadas em manter a retenção máxima do usuário nas redes sociais.',
+        titulo: 'Stocks e trilha sonora',
+        descricao: 'Onde buscar imagens, vídeos de banco e músicas, e como escolher a trilha que sustenta o ritmo do vídeo.',
         duracaoMin: 22,
-        vturbEmbedId: '',
+        vturbEmbedId: '6ac7e19521e7179aa79c3b70',
         materialUrl: null,
         publicado: true,
         concluida: false
@@ -232,17 +231,25 @@ export const modulosIniciaisMock: Modulo[] = [
         id: 'aula-3-3',
         moduloId: 'mod-3',
         ordem: 3,
-        titulo: 'Legendas Animadas, SFX e Efeitos de Impacto',
-        descricao: 'Como aplicar efeitos sonoros e elementos visuais para destacar pontos-chave do seu anúncio.',
+        titulo: 'Edição de Criativos',
+        descricao: 'O passo a passo da edição de um criativo para anúncios, do corte inicial à finalização.',
         duracaoMin: 19,
-        vturbEmbedId: '',
-        materialUrl: '#',
+        vturbEmbedId: '6ac7f73275c9905a7ecf0fa0',
+        materialUrl: null,
         publicado: true,
-        concluida: false,
-        materialAnexo: {
-          nome: 'Pack_Efeitos_Sonoros_e_Overlay.zip',
-          url: '#'
-        }
+        concluida: false
+      },
+      {
+        id: 'aula-3-4',
+        moduloId: 'mod-3',
+        ordem: 4,
+        titulo: 'Edição de VSL',
+        descricao: 'Como montar e editar uma VSL, do ritmo da narração aos elementos que seguram a retenção.',
+        duracaoMin: 20,
+        vturbEmbedId: '6ac7e8cf749351ff9eb5e1af',
+        materialUrl: null,
+        publicado: true,
+        concluida: false
       }
     ]
   },
