@@ -70,7 +70,7 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
   }, [modulos, updateScrollState]);
 
   // Calculate total course stats (apenas dos módulos disponíveis)
-  const modulosDisponiveis = modulos.filter((m) => !m.bloqueado && (m.ordem === undefined || m.ordem < 4));
+  const modulosDisponiveis = modulos.filter((m) => !m.bloqueado && (m.ordem === undefined || m.ordem < 3));
   const totalAulas = modulosDisponiveis.reduce((acc, m) => acc + m.aulas.length, 0);
   const aulasConcluidas = modulosDisponiveis.reduce(
     (acc, m) => acc + m.aulas.filter((a) => a.concluida).length,
@@ -129,7 +129,7 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
   };
 
   const handleCardClick = (modulo: Modulo) => {
-    const isBloqueado = modulo.bloqueado || (modulo.ordem !== undefined && modulo.ordem >= 4);
+    const isBloqueado = modulo.bloqueado || (modulo.ordem !== undefined && modulo.ordem >= 3);
     if (isBloqueado) {
       setLockedToast(`${modulo.titulo}: este módulo será liberado em breve!`);
       setTimeout(() => {
@@ -258,7 +258,7 @@ export const ModuloGrid: React.FC<ModuloGridProps> = ({
           }}
         >
           {modulos.map((modulo) => {
-            const isBloqueado = modulo.bloqueado || (modulo.ordem !== undefined && modulo.ordem >= 4);
+            const isBloqueado = modulo.bloqueado || (modulo.ordem !== undefined && modulo.ordem >= 3);
             const totalM = modulo.aulas.length;
             const concluidasM = modulo.aulas.filter((a) => a.concluida).length;
             const pctM = totalM > 0 ? Math.round((concluidasM / totalM) * 100) : 0;

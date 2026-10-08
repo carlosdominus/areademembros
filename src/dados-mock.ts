@@ -201,7 +201,7 @@ export const modulosIniciaisMock: Modulo[] = [
     capaUrl: 'https://membros.dominus.site/images/m4_converted.webp?v=2',
     mapaMentalUrl: 'https://mm.tt/map/4094674389?t=ClMkMYZ2Fi',
     publicado: true,
-    bloqueado: false,
+    bloqueado: true,
     aulas: [
       {
         id: 'aula-3-1',
