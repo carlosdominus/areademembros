@@ -30,15 +30,15 @@ export const CardModulo: React.FC<CardModuloProps> = ({
   const temGrupos = grupos.length > 0 && grupos.every((g) => g.aulas.length > 0)
     && modulo.aulas.every((a) => !!a.grupo);
 
-  // Abre a gaveta da aula em exibição; na falta dela, a primeira.
+  // Apenas uma gaveta aberta por vez: abrir uma fecha a outra.
+  // Começa na gaveta da aula em exibição; na falta dela, a primeira.
   const grupoDaAulaAtual = modulo.aulas.find((a) => a.id === aulaAtualId)?.grupo;
-  const [gruposFechados, setGruposFechados] = useState<Record<string, boolean>>({});
-  const estaAberto = (nome: string) => {
-    if (nome in gruposFechados) return !gruposFechados[nome];
-    return grupoDaAulaAtual ? nome === grupoDaAulaAtual : nome === grupos[0]?.nome;
-  };
+  const [grupoAberto, setGrupoAberto] = useState<string | null>(
+    grupoDaAulaAtual ?? grupos[0]?.nome ?? null
+  );
+  const estaAberto = (nome: string) => grupoAberto === nome;
   const alternarGrupo = (nome: string) =>
-    setGruposFechados((prev) => ({ ...prev, [nome]: estaAberto(nome) }));
+    setGrupoAberto((atual) => (atual === nome ? null : nome));
 
   const listaDeAulas = (aulas: typeof modulo.aulas) =>
     aulas.map((aula, index) => (
