@@ -95,7 +95,7 @@ export async function loadCourseData(uid: string): Promise<Modulo[]> {
       snapModulosResult.value.forEach((docSnap) => {
         const data = docSnap.data();
         if (data.publicado !== false) {
-          const isBloqueado = data.bloqueado !== undefined ? data.bloqueado : ((data.ordem ?? 0) >= 4);
+          const isBloqueado = data.bloqueado !== undefined ? data.bloqueado : ((data.ordem ?? 0) >= 6);
           const ordem = data.ordem !== undefined ? data.ordem : 0;
           const capaUrl = data.capaUrl && !data.capaUrl.includes('membros.dominus.site/images')
             ? data.capaUrl
@@ -206,7 +206,7 @@ export async function loadCourseData(uid: string): Promise<Modulo[]> {
 
     // 3. Distribui as aulas nos módulos correspondentes aplicando o progresso do usuário
     todasAulasMap.forEach((aula) => {
-      const isModBloqueado = moduloMap.get(aula.moduloId)?.bloqueado || ((moduloMap.get(aula.moduloId)?.ordem ?? 0) >= 4);
+      const isModBloqueado = moduloMap.get(aula.moduloId)?.bloqueado || ((moduloMap.get(aula.moduloId)?.ordem ?? 0) >= 6);
       const isEmBreve = aula.emBreve || !aula.vturbEmbedId || isModBloqueado;
       const prog = isEmBreve ? null : progressoMap[aula.id];
 

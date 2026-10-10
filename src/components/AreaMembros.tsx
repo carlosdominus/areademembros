@@ -58,7 +58,7 @@ export const AreaMembros: React.FC<AreaMembrosProps> = ({
 
             // Remove qualquer marcação anterior em aulas que são "Em Breve"
             initialModulos.forEach((m) => {
-              const isModBloqueado = m.bloqueado || (m.ordem !== undefined && m.ordem >= 4);
+              const isModBloqueado = m.bloqueado || (m.ordem !== undefined && m.ordem >= 6);
               m.aulas.forEach((a) => {
                 if (a.emBreve || !a.vturbEmbedId || isModBloqueado) {
                   estadoConcluidasMap.delete(a.id);
@@ -80,7 +80,7 @@ export const AreaMembros: React.FC<AreaMembrosProps> = ({
         }
 
         return initialModulos.map((mod) => {
-          const isModBloqueado = mod.bloqueado || (mod.ordem !== undefined && mod.ordem >= 4);
+          const isModBloqueado = mod.bloqueado || (mod.ordem !== undefined && mod.ordem >= 6);
           return {
             ...mod,
             aulas: mod.aulas.map((aula) => {
@@ -116,7 +116,7 @@ export const AreaMembros: React.FC<AreaMembrosProps> = ({
     const list: { modulo: Modulo; aula: Aula; indexGlobal: number }[] = [];
     let idx = 0;
     modulos.forEach((mod) => {
-      if (mod.bloqueado || (mod.ordem !== undefined && mod.ordem >= 4)) return;
+      if (mod.bloqueado || (mod.ordem !== undefined && mod.ordem >= 6)) return;
       mod.aulas.forEach((aula) => {
         list.push({ modulo: mod, aula, indexGlobal: idx });
         idx++;
@@ -161,7 +161,7 @@ export const AreaMembros: React.FC<AreaMembrosProps> = ({
     if (!user || !aulaAtual) return;
 
     // Impede marcar conclusão em aulas "Em breve", sem vídeo ou em módulos bloqueados
-    const isEmBreve = aulaAtual.emBreve || !aulaAtual.vturbEmbedId || (moduloAtual?.ordem !== undefined && moduloAtual.ordem >= 4) || moduloAtual?.bloqueado;
+    const isEmBreve = aulaAtual.emBreve || !aulaAtual.vturbEmbedId || (moduloAtual?.ordem !== undefined && moduloAtual.ordem >= 6) || moduloAtual?.bloqueado;
     if (isEmBreve) return;
 
     const targetAulaId = aulaAtual.id;
@@ -197,7 +197,7 @@ export const AreaMembros: React.FC<AreaMembrosProps> = ({
     if (!user || !aulaAtual) return;
 
     // Não permite avaliação em aulas em breve
-    const isEmBreve = aulaAtual.emBreve || !aulaAtual.vturbEmbedId || (moduloAtual?.ordem !== undefined && moduloAtual.ordem >= 4) || moduloAtual?.bloqueado;
+    const isEmBreve = aulaAtual.emBreve || !aulaAtual.vturbEmbedId || (moduloAtual?.ordem !== undefined && moduloAtual.ordem >= 6) || moduloAtual?.bloqueado;
     if (isEmBreve) return;
 
     const targetAulaId = aulaAtual.id;
@@ -227,7 +227,7 @@ export const AreaMembros: React.FC<AreaMembrosProps> = ({
 
   const handleSelectModuloFromGrid = (modId: string) => {
     const targetModule = modulos.find((m) => m.id === modId);
-    if (!targetModule || targetModule.bloqueado || (targetModule.ordem !== undefined && targetModule.ordem >= 4)) return;
+    if (!targetModule || targetModule.bloqueado || (targetModule.ordem !== undefined && targetModule.ordem >= 6)) return;
     if (targetModule.aulas.length > 0) {
       setModuloAtualId(modId);
       const firstUncompleted = targetModule.aulas.find((a) => !a.concluida);
@@ -238,7 +238,7 @@ export const AreaMembros: React.FC<AreaMembrosProps> = ({
 
   const handleSelectModuloFromSidebar = (modId: string) => {
     const targetModule = modulos.find((m) => m.id === modId);
-    if (!targetModule || targetModule.bloqueado || (targetModule.ordem !== undefined && targetModule.ordem >= 4)) return;
+    if (!targetModule || targetModule.bloqueado || (targetModule.ordem !== undefined && targetModule.ordem >= 6)) return;
     if (targetModule.aulas.length > 0) {
       setModuloAtualId(modId);
       setAulaAtualId(targetModule.aulas[0].id);
@@ -331,7 +331,7 @@ export const AreaMembros: React.FC<AreaMembrosProps> = ({
                         emBreve={Boolean(
                           aulaAtual.emBreve ||
                             !aulaAtual.vturbEmbedId ||
-                            (moduloAtual?.ordem !== undefined && moduloAtual.ordem >= 4) ||
+                            (moduloAtual?.ordem !== undefined && moduloAtual.ordem >= 6) ||
                             moduloAtual?.bloqueado
                         )}
                       />
