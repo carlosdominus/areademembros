@@ -315,7 +315,7 @@ export const modulosIniciaisMock: Modulo[] = [
         titulo: 'Estrutura do Meta Ads',
         descricao: 'Como montar a estrutura de campanhas, conjuntos e anúncios dentro do Meta Ads.',
         duracaoMin: 21,
-        vturbEmbedId: '',
+        vturbEmbedId: '6aca53b1129d41b9e4d20f7b',
         materialUrl: null,
         publicado: true,
         concluida: false
@@ -327,7 +327,7 @@ export const modulosIniciaisMock: Modulo[] = [
         titulo: 'Teste de Criativos',
         descricao: 'Como testar criativos, o que observar em cada rodada e quando cortar ou manter.',
         duracaoMin: 26,
-        vturbEmbedId: '',
+        vturbEmbedId: '6aca53d7129d41b9e4d20fb8',
         materialUrl: null,
         publicado: true,
         concluida: false
@@ -339,7 +339,7 @@ export const modulosIniciaisMock: Modulo[] = [
         titulo: 'Pré Escala & Escala',
         descricao: 'O que fazer antes de escalar e como conduzir a escala sem quebrar a performance.',
         duracaoMin: 23,
-        vturbEmbedId: '',
+        vturbEmbedId: '6aca53f4129d41b9e4d2102c',
         materialUrl: null,
         publicado: true,
         concluida: false
