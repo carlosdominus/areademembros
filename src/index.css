@@ -21,6 +21,12 @@
   --r-campo: 12px;
 }
 
+html {
+  /* Reserva o espaço da barra de rolagem para a página não deslocar de lado
+     quando ela aparece ou some. */
+  scrollbar-gutter: stable;
+}
+
 body {
   font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, sans-serif;
   color: var(--texto);
