@@ -1,5 +1,5 @@
-import React from 'react';
-import { CheckCircle2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { CheckCircle2, ChevronDown } from 'lucide-react';
 import { Modulo } from '../types';
 import { ItemAula } from './ItemAula';
 
@@ -17,6 +17,40 @@ export const CardModulo: React.FC<CardModuloProps> = ({
   onSelectAula
 }) => {
   const todasConcluidas = modulo.aulas.length > 0 && modulo.aulas.every((a) => a.concluida);
+
+  // Agrupa as aulas em seções recolhíveis quando o módulo usa o campo "grupo".
+  // Sem grupo, a lista continua plana como nos demais módulos.
+  const grupos: { nome: string; aulas: typeof modulo.aulas }[] = [];
+  modulo.aulas.forEach((a) => {
+    if (!a.grupo) return;
+    const existente = grupos.find((g) => g.nome === a.grupo);
+    if (existente) existente.aulas.push(a);
+    else grupos.push({ nome: a.grupo, aulas: [a] });
+  });
+  const temGrupos = grupos.length > 0 && grupos.every((g) => g.aulas.length > 0)
+    && modulo.aulas.every((a) => !!a.grupo);
+
+  // Abre a gaveta da aula em exibição; na falta dela, a primeira.
+  const grupoDaAulaAtual = modulo.aulas.find((a) => a.id === aulaAtualId)?.grupo;
+  const [gruposFechados, setGruposFechados] = useState<Record<string, boolean>>({});
+  const estaAberto = (nome: string) => {
+    if (nome in gruposFechados) return !gruposFechados[nome];
+    return grupoDaAulaAtual ? nome === grupoDaAulaAtual : nome === grupos[0]?.nome;
+  };
+  const alternarGrupo = (nome: string) =>
+    setGruposFechados((prev) => ({ ...prev, [nome]: estaAberto(nome) }));
+
+  const listaDeAulas = (aulas: typeof modulo.aulas) =>
+    aulas.map((aula, index) => (
+      <ItemAula
+        key={aula.id}
+        aula={aula}
+        isAtual={aula.id === aulaAtualId}
+        isProximaConcluida={aulas[index + 1]?.concluida ?? false}
+        isUltimaDoModulo={index === aulas.length - 1}
+        onSelectAula={onSelectAula}
+      />
+    ));
 
   return (
     <div className="vidro rounded-[20px] overflow-hidden transition-all duration-150">
@@ -53,19 +87,39 @@ export const CardModulo: React.FC<CardModuloProps> = ({
       {/* Módulo expandido: sub-lista indentada das aulas */}
       {isOpen && (
         <div className="lista-aulas p-2 space-y-1 border-t border-[rgba(255,255,255,0.08)] bg-[rgba(0,0,0,0.30)]">
-          {modulo.aulas.map((aula, index) => {
-            const proximaAula = modulo.aulas[index + 1];
-            return (
-              <ItemAula
-                key={aula.id}
-                aula={aula}
-                isAtual={aula.id === aulaAtualId}
-                isProximaConcluida={proximaAula?.concluida ?? false}
-                isUltimaDoModulo={index === modulo.aulas.length - 1}
-                onSelectAula={onSelectAula}
-              />
-            );
-          })}
+          {temGrupos
+            ? grupos.map((grupo) => {
+                const aberto = estaAberto(grupo.nome);
+                const concluidas = grupo.aulas.filter((a) => a.concluida).length;
+                return (
+                  <div key={grupo.nome} className="rounded-[12px] overflow-hidden border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)]">
+                    <button
+                      type="button"
+                      onClick={() => alternarGrupo(grupo.nome)}
+                      aria-expanded={aberto}
+                      className="w-full px-3 py-2.5 flex items-center justify-between gap-2 hover:bg-white/[0.04] transition-colors cursor-pointer focus-visible:outline-none"
+                    >
+                      <span className="flex items-center gap-2 min-w-0">
+                        <span className="font-['Inter_Tight',sans-serif] font-semibold text-[13px] text-[#EDF4EB] truncate">
+                          {grupo.nome}
+                        </span>
+                        <span className="font-['Inter_Tight',sans-serif] text-[11.5px] text-[#A7B7A4] shrink-0">
+                          {concluidas > 0
+                            ? `${concluidas}/${grupo.aulas.length} aulas`
+                            : `${grupo.aulas.length} aulas`}
+                        </span>
+                      </span>
+                      <ChevronDown
+                        className={`w-4 h-4 text-[#41F20A] shrink-0 transition-transform duration-200 ${aberto ? '' : '-rotate-90'}`}
+                      />
+                    </button>
+                    {aberto && (
+                      <div className="p-1.5 pt-0 space-y-1">{listaDeAulas(grupo.aulas)}</div>
+                    )}
+                  </div>
+                );
+              })
+            : listaDeAulas(modulo.aulas)}
         </div>
       )}
     </div>

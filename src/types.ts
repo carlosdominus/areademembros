@@ -8,6 +8,8 @@ export interface Aula {
   vturbEmbedId: string;
   /** Proporção do vídeo (largura ÷ altura). Padrão 16/9 quando ausente. */
   proporcao?: number;
+  /** Agrupa a aula numa seção recolhível dentro do módulo (ex.: "Meta"). */
+  grupo?: string;
   materialUrl: string | null;
   publicado: boolean;
   emBreve?: boolean;
