@@ -305,6 +305,7 @@ export const modulosIniciaisMock: Modulo[] = [
     ordem: 5,
     titulo: '5. Tráfego',
     capaUrl: 'https://membros.dominus.site/images/m6_converted.webp?v=2',
+    mapaMentalUrl: 'https://mm.tt/map/4097100700?t=AHY6ObNhUx',
     publicado: true,
     bloqueado: false,
     aulas: [
@@ -421,6 +422,7 @@ export const modulosIniciaisMock: Modulo[] = [
     ordem: 6,
     titulo: '6. Gestão',
     capaUrl: 'https://membros.dominus.site/images/m7_converted.webp?v=2',
+    mapaMentalUrl: 'https://mm.tt/map/4097108540?t=U1KZZpY4aA',
     publicado: true,
     bloqueado: true,
     aulas: [
