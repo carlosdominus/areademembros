@@ -395,8 +395,8 @@ export const modulosIniciaisMock: Modulo[] = [
         titulo: '3. Pré escala & Escala',
         grupo: 'TikTok',
         descricao: 'O que validar antes de escalar no TikTok e como conduzir a escala.',
-        duracaoMin: 8,
-        vturbEmbedId: '6acbd25dbef6ac448cf8b30a',
+        duracaoMin: 7,
+        vturbEmbedId: '6ad0c1cb3df475d7817794aa',
         materialUrl: null,
         publicado: true,
         concluida: false
