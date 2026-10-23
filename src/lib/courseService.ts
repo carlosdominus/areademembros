@@ -163,15 +163,20 @@ export async function loadCourseData(uid: string): Promise<Modulo[]> {
     // Inicializa os módulos garantindo capas válidas e ordem correta
     baseModulos.forEach((m) => {
       const mockMod = mockModulosMap.get(m.id);
-      const ordem = m.ordem !== undefined ? m.ordem : (mockMod?.ordem ?? 0);
+      // O catálogo do repositório manda em tudo que descreve o módulo: é por ele
+      // que publicamos. O Firestore entra apenas para módulos que o catálogo
+      // desconhece. Sem isso, liberar um módulo aqui não surtia efeito, porque o
+      // "bloqueado" do Firestore voltava por cima.
+      const ordem = mockMod?.ordem ?? (m.ordem !== undefined ? m.ordem : 0);
       const capaUrl = mockMod?.capaUrl || `https://membros.dominus.site/images/m${ordem + 1}_converted.webp?v=2`;
 
       moduloMap.set(m.id, {
         ...m,
+        ordem: ordem,
         titulo: mockMod?.titulo || m.titulo,
         capaUrl: capaUrl,
-        // O link do mapa mental do catálogo local tem prioridade; o Firestore serve de complemento
         mapaMentalUrl: mockMod?.mapaMentalUrl || m.mapaMentalUrl,
+        bloqueado: mockMod?.bloqueado ?? m.bloqueado,
         aulas: []
       });
     });
