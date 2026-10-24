@@ -293,10 +293,9 @@ export const modulosIniciaisMock: Modulo[] = [
         titulo: '3. Configurando Entregável e Acesso',
         descricao: 'Como preparar a entrega do produto e liberar o acesso do comprador.',
         duracaoMin: 0,
-        vturbEmbedId: '',
+        vturbEmbedId: '6adbd3fb970c42fb31d5bb2e',
         materialUrl: null,
         publicado: true,
-        emBreve: true,
         concluida: false
       }
     ]
